@@ -1,0 +1,381 @@
+import os
+import shutil
+from glob import glob
+from tqdm import tqdm
+from PIL import Image
+
+ROOT_DIR = (
+    "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/PRINT_SCAN/"
+)
+CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
+ALIGNED = "aligned"
+BONAFIDE = "bonafide"
+MORPH = "morph"
+RAW = "raw"
+
+
+def change_name(file) -> str:
+    head, tail = os.path.split(file)
+    tail = tail.removeprefix("scanned_").replace("-", "_")
+    return os.path.join(head, tail)
+
+
+def get_bonafide_stats(bdir: str, ofile: str) -> None:
+    stats: str = ""
+    for ssplit in ["test", "train"]:
+        images = glob(os.path.join(bdir, ssplit, "*.jpg"))
+        if len(images) == 0:
+            images = glob(os.path.join(bdir, ssplit, "*.png"))
+
+        stats += f"{ssplit.capitalize()} split \n"
+        stats += f"Total Images: {len(images)}\n"
+        ids = {}
+        for image in images:
+            id, nm = os.path.split(image)[1].split("_")
+            if id in ids:
+                ids[id].append(nm)
+            else:
+                ids[id] = [nm]
+        stats += f"\tTotal identities: {len(ids.keys())}\n"
+        mean_images = sum([len(x) for x in ids.values()]) / len(ids.keys())
+        stats += f"\tAverage images per identity: {round(mean_images, 3)}\n\n"
+
+    with open(ofile, "w+") as fp:
+        fp.write(stats)
+    print(stats)
+
+
+def clean_digital() -> None:
+    root_dir = os.path.join(ROOT_DIR, "digital")
+    clean_dir = os.path.join(CLEAN_DIR, "digital")
+    os.makedirs(os.path.join(clean_dir, BONAFIDE), exist_ok=True)
+    os.makedirs(os.path.join(clean_dir, MORPH), exist_ok=True)
+    os.makedirs(os.path.join(clean_dir, ALIGNED), exist_ok=True)
+    os.makedirs(os.path.join(clean_dir, RAW), exist_ok=True)
+
+    for fpath in tqdm(glob(os.path.join(root_dir, ALIGNED, "*", "*.png"))):
+        opath = fpath.split(ALIGNED + "/")[1]
+        opath = os.path.join(clean_dir, ALIGNED, opath)
+        opath = change_name(opath)
+        os.makedirs(os.path.split(opath)[0], exist_ok=True)
+        shutil.copy(fpath, opath)
+
+    for fpath in tqdm(glob(os.path.join(root_dir, BONAFIDE, "*", "*", "*.jpg"))):
+        opath = fpath.split(BONAFIDE + "/")[1].replace("FaceDetect/", "")
+        opath = os.path.join(clean_dir, BONAFIDE, opath)
+        opath = change_name(opath)
+        os.makedirs(os.path.split(opath)[0], exist_ok=True)
+        shutil.copy(fpath, opath)
+
+    for fpath in tqdm(glob(os.path.join(root_dir, BONAFIDE, "*", "*.jpg"))):
+        opath = fpath.split(BONAFIDE + "/")[1]
+        opath = os.path.join(clean_dir, RAW, opath)
+        opath = change_name(opath)
+        os.makedirs(os.path.split(opath)[0], exist_ok=True)
+        shutil.copy(fpath, opath)
+
+
+def clean_morph_name(name: str) -> str:
+    # scanned
+    if "scanned_" in name:
+        name = name.removeprefix("scanned_")
+
+    # pipe
+    if "MDFP" in name:
+        name = name.removeprefix("MDFP_")
+
+    # mordiff
+    if "MMDF" in name:
+        name = name.removeprefix("MMDF_")
+
+    # lmaubo
+    if "M" in name:
+        name = name.removeprefix("M_")
+        temp = name.split(".")
+        name = temp[0].removesuffix("_W0") + "." + temp[-1]
+
+    # lma
+    if "d" in name:
+        if "_" in name:
+            name = name.replace("_", "-vs-")
+        name = name.replace("d", "_")
+    return name
+
+
+def clean_digital_lma(mdir: str, odir: str):
+    for ssplit in ["test", "train"]:
+        dir = os.path.join(mdir, ssplit)
+        osdir = os.path.join(odir, ssplit)
+        os.makedirs(osdir, exist_ok=True)
+        for file in tqdm(glob(os.path.join(dir, "*.jpg"))):
+            ofname = os.path.join(osdir, clean_morph_name(os.path.split(file)[1]))
+            shutil.copy(file, ofname)
+
+
+def clean_digital_convert(mdir: str, odir: str):
+    for ssplit in ["test", "train"]:
+        dir = os.path.join(mdir, ssplit)
+        osdir = os.path.join(odir, ssplit)
+        os.makedirs(osdir, exist_ok=True)
+        for file in tqdm(glob(os.path.join(dir, "*.png"))):
+            ofname = os.path.join(osdir, clean_morph_name(os.path.split(file)[1]))
+            ofname = ofname.replace("png", "jpg")
+            img = Image.open(file)
+            img.save(ofname)
+
+
+def clean_digital_raw(mdir: str, rdir: str):
+    for ssplit in ["test", "train"]:
+        dir = os.path.join(mdir, ssplit)
+        osrdir = os.path.join(rdir, ssplit)
+        os.makedirs(osrdir, exist_ok=True)
+        for file in tqdm(glob(os.path.join(dir, "*.png"))):
+            fname = clean_morph_name(os.path.split(file)[1])
+            ofrname = os.path.join(osrdir, fname)
+            shutil.copy(file, ofrname)
+
+
+def clean_dnp_raw(mdir: str, rdir: str):
+    for ssplit in ["test", "train"]:
+        dir = os.path.join(mdir, ssplit)
+        osrdir = os.path.join(rdir, ssplit)
+        os.makedirs(osrdir, exist_ok=True)
+        for file in tqdm(glob(os.path.join(dir, "*.png"))):
+            fname = clean_morph_name(os.path.split(file)[1])
+            ofrname = os.path.join(osrdir, fname)
+            shutil.copy(file, ofrname)
+
+
+def clean_dnp_lma(mdir: str, odir: str):
+    for ssplit in ["test", "train"]:
+        dir = os.path.join(mdir, ssplit)
+        osdir = os.path.join(odir, ssplit)
+        os.makedirs(osdir, exist_ok=True)
+
+        for file in tqdm(glob(os.path.join(dir, "*.jpg"))):
+            ofname = os.path.join(osdir, clean_morph_name(os.path.split(file)[1]))
+            shutil.copy(file, ofname)
+
+        for file in tqdm(glob(os.path.join(dir, "*.png"))):
+            ofname = os.path.join(osdir, clean_morph_name(os.path.split(file)[1]))
+            ofname = ofname.replace("png", "jpg")
+            Image.open(file).save(ofname)
+
+
+def clean_digital_morph() -> None:
+    clean_digital_raw(
+        os.path.join(ROOT_DIR, "digital", MORPH, "cvmi"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "cvmi", RAW),
+    )
+    clean_digital_lma(
+        os.path.join(ROOT_DIR, "digital", MORPH, "lma"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "lma"),
+    )
+    clean_digital_lma(
+        os.path.join(ROOT_DIR, "digital", MORPH, "lmaubo"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "lmaubo"),
+    )
+    clean_digital_lma(
+        os.path.join(ROOT_DIR, "digital", MORPH, "mipgan1"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "mipgan1"),
+    )
+    clean_digital_lma(
+        os.path.join(ROOT_DIR, "digital", MORPH, "mipgan2"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "mipgan2"),
+    )
+    clean_digital_raw(
+        os.path.join(ROOT_DIR, "digital", MORPH, "mordiff"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "mordiff", RAW),
+    )
+    clean_digital_raw(
+        os.path.join(ROOT_DIR, "digital", MORPH, "Morphing_Diffusion_2024"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "Morphing_Diffusion_2024", RAW),
+    )
+    clean_digital_raw(
+        os.path.join(ROOT_DIR, "digital", MORPH, "pipe"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "pipe", RAW),
+    )
+    clean_digital_lma(
+        os.path.join(ROOT_DIR, "digital", MORPH, "stylegan"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "stylegan"),
+    )
+    clean_digital_raw(
+        os.path.join(ROOT_DIR, "digital", MORPH, "greedy"),
+        os.path.join(CLEAN_DIR, "digital", MORPH, "greedy", RAW),
+    )
+
+
+def clean_rico() -> None:
+    #     clean_rico_bonafide()
+    get_bonafide_stats(
+        os.path.join(CLEAN_DIR, "rico", BONAFIDE, RAW),
+        os.path.join(CLEAN_DIR, "rico", "bonafide_stats.txt"),
+    )
+    clean_rico_morph()
+
+
+def clean_rico_morph() -> None:
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "cvmi"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "cvmi", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "lma"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "lma", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "lmaubo"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "lmaubo", RAW),
+    )
+
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "mipgan1"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "mipgan1", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "mipgan2"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "mipgan2", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "mordiff"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "mordiff", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "Morphing_Diffusion_2024"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "Morphing_Diffusion_2024", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "pipe"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "pipe", RAW),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "rico", MORPH, "stylegan"),
+        os.path.join(CLEAN_DIR, "rico", MORPH, "stylegan", RAW),
+    )
+
+
+def clean_dnp_morph() -> None:
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "cvmi"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "cvmi"),
+    )
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "lma"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "lma"),
+    )
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "lmaubo"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "lmaubo"),
+    )
+
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "mipgan1"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "mipgan1"),
+    )
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "mipgan2"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "mipgan2"),
+    )
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "mordiff"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "mordiff"),
+    )
+    clean_dnp_raw(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "Morphing_Diffusion_2024"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "Morphing_Diffusion_2024", RAW),
+    )
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "pipe"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "pipe"),
+    )
+    clean_dnp_lma(
+        os.path.join(ROOT_DIR, "dnp", MORPH, "stylegan"),
+        os.path.join(CLEAN_DIR, "dnp", MORPH, "stylegan"),
+    )
+
+
+#     clean_digital_raw(
+#         os.path.join(ROOT_DIR, "digital", MORPH, "greedy"),
+#         os.path.join(CLEAN_DIR, "digital", MORPH, "greedy", RAW),
+#     )
+
+
+def clean_rico_bonafide():
+    root_dir = os.path.join(ROOT_DIR, "rico")
+    clean_dir = os.path.join(CLEAN_DIR, "rico")
+    os.makedirs(os.path.join(clean_dir, BONAFIDE), exist_ok=True)
+    os.makedirs(os.path.join(clean_dir, MORPH), exist_ok=True)
+    for fpath in tqdm(glob(os.path.join(root_dir, BONAFIDE, "*", "*.png"))):
+        opath = fpath.split(BONAFIDE + "/")[1]
+        opath = os.path.join(clean_dir, BONAFIDE, RAW, opath)
+        opath = change_name(opath)
+        os.makedirs(os.path.split(opath)[0], exist_ok=True)
+        shutil.copy(fpath, opath)
+
+
+def clean_dnp_bonafide():
+    root_dir = os.path.join(ROOT_DIR, "DNP")
+    clean_dir = os.path.join(CLEAN_DIR, "dnp")
+    os.makedirs(os.path.join(clean_dir, BONAFIDE), exist_ok=True)
+    os.makedirs(os.path.join(clean_dir, MORPH), exist_ok=True)
+    for fpath in tqdm(glob(os.path.join(root_dir, BONAFIDE, "*", "*.jpg"))):
+        opath = fpath.split(BONAFIDE + "/")[1]
+        opath = os.path.join(clean_dir, BONAFIDE, opath)
+        opath = change_name(opath)
+        os.makedirs(os.path.split(opath)[0], exist_ok=True)
+        shutil.copy(fpath, opath)
+
+
+def clean_dnp() -> None:
+    #     clean_dnp_bonafide()
+    #     get_bonafide_stats(
+    #         os.path.join(CLEAN_DIR, "dnp", BONAFIDE),
+    #         os.path.join(CLEAN_DIR, "dnp", "bonafide_stats.txt"),
+    #     )
+    clean_dnp_morph()
+
+
+def check_differences(dir1, dir2):
+    for ssplit in ["test", "train"]:
+        dir1ids = {}
+        images = glob(os.path.join(dir1, ssplit, "*.jpg"))
+        if len(images) == 0:
+            images = glob(os.path.join(dir1, ssplit, "*.png"))
+
+        for image in images:
+            id, nm = os.path.split(image)[1].split("_")
+            if id in dir1ids:
+                dir1ids[id].append(nm)
+            else:
+                dir1ids[id] = [nm]
+
+        dir2ids = {}
+        images = glob(os.path.join(dir2, ssplit, "*.jpg"))
+        if len(images) == 0:
+            images = glob(os.path.join(dir2, ssplit, "*.png"))
+        for image in images:
+            id, nm = os.path.split(image)[1].split("_")
+            if id in dir2ids:
+                dir2ids[id].append(nm)
+            else:
+                dir2ids[id] = [nm]
+
+        print(ssplit, len(dir1ids.keys()), len(dir2ids.keys()))
+        for id in dir2ids:
+            if id not in dir1ids:
+                print("Not present:", id)
+
+
+if __name__ == "__main__":
+    clean_digital()
+    get_bonafide_stats(
+        os.path.join(CLEAN_DIR, "digital", BONAFIDE),
+        os.path.join(CLEAN_DIR, "digital", "bonafide_stats.txt"),
+    )
+    clean_digital_morph()
+    clean_dnp()
+    clean_rico()
+    check_differences(
+        os.path.join(CLEAN_DIR, "digital", BONAFIDE),
+        os.path.join(CLEAN_DIR, "rico", BONAFIDE, RAW),
+    )

@@ -1,0 +1,7 @@
+*.pyc
+*.pt
+*.pth
+*.onnx
+*.npy
+*.zip
+morphs/models/*
