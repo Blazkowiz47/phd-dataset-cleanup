@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from tqdm import tqdm
 
-from .arcface import iresnet
+from . import iresnet
 from .scheduler import DPMSolverMultiStepScheduler
 from .templates import *
 

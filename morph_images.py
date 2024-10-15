@@ -1,4 +1,3 @@
-import os
 from typing import Callable, Tuple
 
 
@@ -21,6 +20,10 @@ def get_morph_driver(morph: str) -> Callable[[Tuple[int, str, str, str]], None]:
         return driver
     if morph == "mordiff":
         from morphs.mordiff import driver
+
+        return driver
+    if morph == "greedy":
+        from morphs.greedy import driver
 
         return driver
 
