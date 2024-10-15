@@ -5,7 +5,7 @@ from typing import Tuple
 from tqdm import tqdm
 
 
-resultsdir = "./Results"
+resultsdir = "./morphs/lmaubo/Results"
 
 
 def driver(args: Tuple[int, str, str, str]):
@@ -34,10 +34,13 @@ def driver(args: Tuple[int, str, str, str]):
 
 
 def execute(img1: str, img2: str, output: str) -> bool:
-    with open("./IndexFile.txt", "w+") as fp:
+    with open("./morphs/lmaubo/IndexFile.txt", "w+") as fp:
         fp.writelines([f"{img1} {img2}"])
 
-    os.system("MorphedImageGenerator.bat")
+    os.makedirs(resultsdir, exist_ok=True)
+    os.system(
+        f"./morphs/lmaubo/MorphedImageGenerator.exe ./morphs/lmaubo/IndexFile.txt {resultsdir}"
+    )
 
     found = False
     for img in os.listdir(resultsdir):
