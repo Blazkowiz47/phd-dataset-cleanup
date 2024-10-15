@@ -1,23 +1,23 @@
 import argparse
+import csv
 import os
+import pickle
 from typing import Tuple
 
-import csv
-import dnnlib.tflib as tflib
 import numpy as np
-from imageio import imread
-import pickle
-from PIL import Image
-from keras.models import load_model
-from keras.applications.resnet50 import preprocess_input
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-from tqdm import tqdm
 import yaml
+from imageio import imread
+from keras.applications.resnet50 import preprocess_input
+from keras.models import load_model
+from PIL import Image
+from tqdm import tqdm
 
-from .model import get_embd
+from .dnnlib import tflib as tflib
 from .encoder.generator_model import Generator
 from .encoder.perceptual_model_MIPGAN import PerceptualModel, load_ref_image
+from .model import get_embd
 
 
 def split_to_batches(l, n):
@@ -99,7 +99,7 @@ def load_image_frs(dir_path, image_size):
         paths = [dir_path]
     images = []
     images_f = []
-    for path in paths:
+    for path in tqdm(paths, desc="Loading frs"):
         img = imread(os.path.join(dir_path, path))
         img = np.array(Image.fromarray(img).resize((image_size, image_size)))
         # img = misc.imresize(img, [image_size, image_size])
@@ -198,14 +198,11 @@ def driver(args: Tuple[int, str, str, str]) -> None:
 
     tflib.init_tf()
 
+    print(os.path.isfile(model_url))
     # Local model
     url = os.path.abspath(model_url)
     with open(url, "rb") as f:
-        _, discriminator_network, Gs_network = pickle.load(f)
-
-    # Url model
-    # with dnnlib.util.open_url(args.model_url, cache_dir=config.cache_dir) as f:
-    #     generator_network, discriminator_network, Gs_network = pickle.load(f)
+        generator_network, discriminator_network, Gs_network = pickle.load(f)
 
     generator = Generator(
         Gs_network,
@@ -215,10 +212,55 @@ def driver(args: Tuple[int, str, str, str]) -> None:
         model_res=model_res,
         randomize_noise=randomize_noise,
     )
-
+    ags = argparse.Namespace(
+        src_dir=src_dir,
+        generated_images_dir=output_dir,
+        dlatent_dir="./latent_representations/",
+        data_dir="./morphs/mipgan1/data",
+        mask_dir="masks",
+        loss_dir="loss",
+        frs_config_path=frs_config_path,
+        frs_model_path=frs_model_path,
+        dlatent_avg="",
+        model_url=model_url,
+        model_res=1024,
+        optimizer="adam",
+        image_size=256,
+        resnet_image_size=256,
+        decay_rate=0.95,
+        iterations=150,
+        decay_steps=6,
+        early_stopping=False,
+        early_stopping_threshold=10000000,
+        lr=0.03,
+        early_stopping_ratio=0,
+        early_stopping_patience=10,
+        load_resnet=load_resnet,
+        use_preprocess_input=True,
+        use_best_loss=True,
+        average_best_loss=0.5,
+        sharpen_input=True,
+        use_perceptual_loss=0.0002,
+        use_pixel_loss_logcosh=0,
+        use_pixel_loss_mse=0,
+        use_msssim_loss=1,
+        use_l1_penalty=0,
+        use_discriminator_loss=0,
+        use_arcface_loss=10,
+        use_arcface_difference_loss=1,
+        randomize_noise=False,
+        tile_dlatents=False,
+        clipping_threshold=0,
+        video_dir="videos",
+        output_video=False,
+        video_codec="MJPG",
+        video_frame_rate=24,
+        video_size=512,
+        video_skip=1,
+    )
     perc_model = None
     perceptual_model = PerceptualModel(
-        args, frs_embds_dict=frs_embds_dict, perc_model=perc_model, batch_size=1
+        ags, frs_embds_dict=frs_embds_dict, perc_model=perc_model, batch_size=1
     )
     perceptual_model.build_perceptual_model(generator, discriminator_network)
 
@@ -305,5 +347,3 @@ def driver(args: Tuple[int, str, str, str]) -> None:
             img.save(os.path.join(output_dir, f"{img_name}.png"), "PNG")
 
         generator.reset_dlatents()
-        del generated_images
-        del generated_dlatents

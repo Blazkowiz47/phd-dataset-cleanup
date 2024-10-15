@@ -5,18 +5,21 @@
 # __version__ = "1.0"
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-import tensorflow as tf
-import os
+
 import bz2
-import PIL.Image
-from PIL import ImageFilter
-import numpy as np
-from keras.models import Model
-from keras.applications.vgg16 import VGG16, preprocess_input
+import os
+
 import keras.backend as K
-import dnnlib.tflib as tflib
+import numpy as np
+import PIL.Image
+import tensorflow as tf
 import tensorflow.contrib.slim as slim
+from keras.applications.vgg16 import VGG16, preprocess_input
+from keras.models import Model
 from mtcnn import MTCNN
+from PIL import ImageFilter
+
+from ..dnnlib import tflib as tflib
 
 
 ####################################################
@@ -59,10 +62,9 @@ def box2square_tight(box):
 
 
 ####################################################
-import yaml
-
 # from scipy import misc
-import model
+from .. import model
+import yaml
 
 
 def generator_output_2_arcface(

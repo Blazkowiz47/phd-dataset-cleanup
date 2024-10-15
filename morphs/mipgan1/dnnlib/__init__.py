@@ -16,5 +16,6 @@ from .submission.submit import get_path_from_template
 from .submission.submit import submit_run
 
 from .util import EasyDict
+from . import tflib
 
-submit_config: SubmitConfig = None # Package level variable for SubmitConfig which is only valid when inside the run function.
+submit_config: SubmitConfig = None  # Package level variable for SubmitConfig which is only valid when inside the run function.

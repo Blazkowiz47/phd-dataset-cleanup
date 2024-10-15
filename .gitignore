@@ -5,3 +5,4 @@
 *.npy
 *.zip
 morphs/models/*
+test_morphs/*

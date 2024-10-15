@@ -1,8 +1,10 @@
 import math
-import tensorflow as tf
-import numpy as np
-import dnnlib.tflib as tflib
 from functools import partial
+
+import numpy as np
+import tensorflow as tf
+
+from ..dnnlib import tflib as tflib
 
 
 def create_stub(name, batch_size):
