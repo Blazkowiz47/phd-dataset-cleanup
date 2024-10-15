@@ -5,20 +5,16 @@ from PIL import Image
 import torch
 from torch.functional import F
 
-path_to_diff_model = "./diffae"
+path_to_diff_model = "./morphs/mordiff/diffae"
 
 sys.path.append(path_to_diff_model)
 
 
 def morph_two_images(image1, image2, output):
-    # load the model
-    device = "cuda:0"
+    device = "cuda"
     conf = ffhq256_autoenc()
-    # print(conf.name)
     model = LitModel(conf)
-    state = torch.load(
-        f"{path_to_diff_model}/checkpoints/ffhq/last.ckpt", map_location="cpu"
-    )
+    state = torch.load("./morphs/models/ffhq/last.ckpt", map_location="cpu")
     model.load_state_dict(state["state_dict"], strict=False)
     model.ema_model.eval()
     model.ema_model.to(device)
@@ -38,9 +34,7 @@ def morph_two_images(image1, image2, output):
 
     def load_image(path):
         img = Image.open(path)
-        # if the image is 'rgba'!
         img = img.convert("RGB")
-        #         assert img.size[0] == img.size[1] == 256
         if transform is not None:
             img = transform(img)
 
@@ -75,19 +69,5 @@ def morph_two_images(image1, image2, output):
     intp_x = intp_x.view(-1, *x_shape)
 
     pred = model.render(intp_x, intp, T=20)
-
-    # torch.manual_seed(1)
-    # fig, ax = plt.subplots(1, 10, figsize=(5*10, 5))
-    #     fig, ax = plt.subplots(1, 3, figsize=(5 * 3, 5))
-    #     for i in range(len(alpha)):
-    #         ax[i].imshow(pred[i].permute(1, 2, 0).cpu())
-
-    name1 = image1.split(".")[-2].split("/")[-1]
-    name2 = image2.split(".")[-2].split("/")[-1]
-
-    #     plt.savefig(os.path.join(outfolder, f"comparison_{name1}_and_{name2}.png"))
-    #
-    #     plt.close("all")
     pred = to_pil_image(pred[1].cpu())
-
     pred.save(output)

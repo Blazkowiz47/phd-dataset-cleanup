@@ -1,4 +1,5 @@
 from typing import List
+
 from torch import distributed
 
 
@@ -40,3 +41,4 @@ def get_world_size():
 def chunk_size(size, rank, world_size):
     extra = rank < size % world_size
     return size // world_size + extra
+

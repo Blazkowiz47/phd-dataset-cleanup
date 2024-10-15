@@ -1,44 +1,42 @@
-from model.unet import ScaleAt
-from model.latentnet import *
-from diffusion.resample import UniformSampler
-from diffusion.diffusion import space_timesteps
+import os
+from multiprocessing import get_context
 from typing import Tuple
 
 from torch.utils.data import DataLoader
-
-from config_base import BaseConfig
-from dataset import *
-from diffusion import *
-from diffusion.base import GenerativeType, LossType, ModelMeanType, ModelVarType, get_named_beta_schedule
-from model import *
-from choices import *
-from multiprocessing import get_context
-import os
-from dataset_util import *
 from torch.utils.data.distributed import DistributedSampler
 
+from .choices import *
+from .config_base import BaseConfig
+from .dataset import *
+from .dataset_util import *
+from .diffusion import *
+from .diffusion.base import (
+    GenerativeType,
+    LossType,
+    ModelMeanType,
+    ModelVarType,
+    get_named_beta_schedule,
+)
+from .diffusion.diffusion import space_timesteps
+from .diffusion.resample import UniformSampler
+from .model import *
+from .model.latentnet import *
+from .model.unet import ScaleAt
+
 data_paths = {
-    'ffhqlmdb256':
-    os.path.expanduser('datasets/ffhq256.lmdb'),
+    "ffhqlmdb256": os.path.expanduser("datasets/ffhq256.lmdb"),
     # used for training a classifier
-    'celeba':
-    os.path.expanduser('datasets/celeba'),
+    "celeba": os.path.expanduser("datasets/celeba"),
     # used for training DPM models
-    'celebalmdb':
-    os.path.expanduser('datasets/celeba.lmdb'),
-    'celebahq':
-    os.path.expanduser('datasets/celebahq256.lmdb'),
-    'horse256':
-    os.path.expanduser('datasets/horse256.lmdb'),
-    'bedroom256':
-    os.path.expanduser('datasets/bedroom256.lmdb'),
-    'celeba_anno':
-    os.path.expanduser('datasets/celeba_anno/list_attr_celeba.txt'),
-    'celebahq_anno':
-    os.path.expanduser(
-        'datasets/celeba_anno/CelebAMask-HQ-attribute-anno.txt'),
-    'celeba_relight':
-    os.path.expanduser('datasets/celeba_hq_light/celeba_light.txt'),
+    "celebalmdb": os.path.expanduser("datasets/celeba.lmdb"),
+    "celebahq": os.path.expanduser("datasets/celebahq256.lmdb"),
+    "horse256": os.path.expanduser("datasets/horse256.lmdb"),
+    "bedroom256": os.path.expanduser("datasets/bedroom256.lmdb"),
+    "celeba_anno": os.path.expanduser("datasets/celeba_anno/list_attr_celeba.txt"),
+    "celebahq_anno": os.path.expanduser(
+        "datasets/celeba_anno/CelebAMask-HQ-attribute-anno.txt"
+    ),
+    "celeba_relight": os.path.expanduser("datasets/celeba_hq_light/celeba_light.txt"),
 }
 
 
@@ -81,9 +79,9 @@ class TrainConfig(BaseConfig):
     latent_rescale_timesteps: bool = False
     latent_T_eval: int = 1_000
     latent_clip_sample: bool = False
-    latent_beta_scheduler: str = 'linear'
-    beta_scheduler: str = 'linear'
-    data_name: str = ''
+    latent_beta_scheduler: str = "linear"
+    beta_scheduler: str = "linear"
+    data_name: str = ""
     data_val_name: str = None
     diffusion_type: str = None
     dropout: float = 0.1
@@ -107,7 +105,7 @@ class TrainConfig(BaseConfig):
     net_beatgans_embed_channels: int = 512
     net_resblock_updown: bool = True
     net_enc_use_time: bool = False
-    net_enc_pool: str = 'adaptivenonzero'
+    net_enc_pool: str = "adaptivenonzero"
     net_beatgans_gradient_checkpoint: bool = False
     net_beatgans_resnet_two_cond: bool = False
     net_beatgans_resnet_use_zero_module: bool = True
@@ -141,13 +139,13 @@ class TrainConfig(BaseConfig):
     net_enc_num_cls: int = None
     num_workers: int = 4
     parallel: bool = False
-    postfix: str = ''
+    postfix: str = ""
     sample_size: int = 64
     sample_every_samples: int = 20_000
     save_every_samples: int = 100_000
     style_ch: int = 512
     T_eval: int = 1_000
-    T_sampler: str = 'uniform'
+    T_sampler: str = "uniform"
     T: int = 1_000
     total_samples: int = 10_000_000
     warmup: int = 0
@@ -156,12 +154,12 @@ class TrainConfig(BaseConfig):
     eval_programs: Tuple[str] = None
     # if present load the checkpoint from this path instead
     eval_path: str = None
-    base_dir: str = 'checkpoints'
+    base_dir: str = "checkpoints"
     use_cache_dataset: bool = False
-    data_cache_dir: str = os.path.expanduser('~/cache')
-    work_cache_dir: str = os.path.expanduser('~/mycache')
+    data_cache_dir: str = os.path.expanduser("~/cache")
+    work_cache_dir: str = os.path.expanduser("~/mycache")
     # to be overridden
-    name: str = ''
+    name: str = ""
 
     def __post_init__(self):
         self.batch_size_eval = self.batch_size_eval or self.batch_size
@@ -183,7 +181,7 @@ class TrainConfig(BaseConfig):
     def fid_cache(self):
         # we try to use the local dirs to reduce the load over network drives
         # hopefully, this would reduce the disconnection problems with sshfs
-        return f'{self.work_cache_dir}/eval_images/{self.data_name}_size{self.img_size}_{self.eval_num_images}'
+        return f"{self.work_cache_dir}/eval_images/{self.data_name}_size{self.img_size}_{self.eval_num_images}"
 
     @property
     def data_path(self):
@@ -191,28 +189,29 @@ class TrainConfig(BaseConfig):
         path = data_paths[self.data_name]
         if self.use_cache_dataset and path is not None:
             path = use_cached_dataset_path(
-                path, f'{self.data_cache_dir}/{self.data_name}')
+                path, f"{self.data_cache_dir}/{self.data_name}"
+            )
         return path
 
     @property
     def logdir(self):
-        return f'{self.base_dir}/{self.name}'
+        return f"{self.base_dir}/{self.name}"
 
     @property
     def generate_dir(self):
         # we try to use the local dirs to reduce the load over network drives
         # hopefully, this would reduce the disconnection problems with sshfs
-        return f'{self.work_cache_dir}/gen_images/{self.name}'
+        return f"{self.work_cache_dir}/gen_images/{self.name}"
 
     def _make_diffusion_conf(self, T=None):
-        if self.diffusion_type == 'beatgans':
+        if self.diffusion_type == "beatgans":
             # can use T < self.T for evaluation
             # follows the guided-diffusion repo conventions
             # t's are evenly spaced
             if self.beatgans_gen_type == GenerativeType.ddpm:
                 section_counts = [T]
             elif self.beatgans_gen_type == GenerativeType.ddim:
-                section_counts = f'ddim{T}'
+                section_counts = f"ddim{T}"
             else:
                 raise NotImplementedError()
 
@@ -224,8 +223,9 @@ class TrainConfig(BaseConfig):
                 model_var_type=self.beatgans_model_var_type,
                 loss_type=self.beatgans_loss_type,
                 rescale_timesteps=self.beatgans_rescale_timesteps,
-                use_timesteps=space_timesteps(num_timesteps=self.T,
-                                              section_counts=section_counts),
+                use_timesteps=space_timesteps(
+                    num_timesteps=self.T, section_counts=section_counts
+                ),
                 fp16=self.fp16,
             )
         else:
@@ -238,7 +238,7 @@ class TrainConfig(BaseConfig):
         if self.latent_gen_type == GenerativeType.ddpm:
             section_counts = [T]
         elif self.latent_gen_type == GenerativeType.ddim:
-            section_counts = f'ddim{T}'
+            section_counts = f"ddim{T}"
         else:
             raise NotImplementedError()
 
@@ -253,8 +253,9 @@ class TrainConfig(BaseConfig):
             model_var_type=self.latent_model_var_type,
             loss_type=self.latent_loss_type,
             rescale_timesteps=self.latent_rescale_timesteps,
-            use_timesteps=space_timesteps(num_timesteps=self.T,
-                                          section_counts=section_counts),
+            use_timesteps=space_timesteps(
+                num_timesteps=self.T, section_counts=section_counts
+            ),
             fp16=self.fp16,
         )
 
@@ -263,7 +264,7 @@ class TrainConfig(BaseConfig):
         return 3
 
     def make_T_sampler(self):
-        if self.T_sampler == 'uniform':
+        if self.T_sampler == "uniform":
             return UniformSampler(self.T)
         else:
             raise NotImplementedError()
@@ -282,40 +283,42 @@ class TrainConfig(BaseConfig):
         return self._make_latent_diffusion_conf(T=self.latent_T_eval)
 
     def make_dataset(self, path=None, **kwargs):
-        if self.data_name == 'ffhqlmdb256':
-            return FFHQlmdb(path=path or self.data_path,
-                            image_size=self.img_size,
-                            **kwargs)
-        elif self.data_name == 'horse256':
-            return Horse_lmdb(path=path or self.data_path,
-                              image_size=self.img_size,
-                              **kwargs)
-        elif self.data_name == 'bedroom256':
-            return Horse_lmdb(path=path or self.data_path,
-                              image_size=self.img_size,
-                              **kwargs)
-        elif self.data_name == 'celebalmdb':
+        if self.data_name == "ffhqlmdb256":
+            return FFHQlmdb(
+                path=path or self.data_path, image_size=self.img_size, **kwargs
+            )
+        elif self.data_name == "horse256":
+            return Horse_lmdb(
+                path=path or self.data_path, image_size=self.img_size, **kwargs
+            )
+        elif self.data_name == "bedroom256":
+            return Horse_lmdb(
+                path=path or self.data_path, image_size=self.img_size, **kwargs
+            )
+        elif self.data_name == "celebalmdb":
             # always use d2c crop
-            return CelebAlmdb(path=path or self.data_path,
-                              image_size=self.img_size,
-                              original_resolution=None,
-                              crop_d2c=True,
-                              **kwargs)
+            return CelebAlmdb(
+                path=path or self.data_path,
+                image_size=self.img_size,
+                original_resolution=None,
+                crop_d2c=True,
+                **kwargs,
+            )
         else:
             raise NotImplementedError()
 
-    def make_loader(self,
-                    dataset,
-                    shuffle: bool,
-                    num_worker: bool = None,
-                    drop_last: bool = True,
-                    batch_size: int = None,
-                    parallel: bool = False):
+    def make_loader(
+        self,
+        dataset,
+        shuffle: bool,
+        num_worker: bool = None,
+        drop_last: bool = True,
+        batch_size: int = None,
+        parallel: bool = False,
+    ):
         if parallel and distributed.is_initialized():
             # drop last to make sure that there is no added special indexes
-            sampler = DistributedSampler(dataset,
-                                         shuffle=shuffle,
-                                         drop_last=True)
+            sampler = DistributedSampler(dataset, shuffle=shuffle, drop_last=True)
         else:
             sampler = None
         return DataLoader(
@@ -327,7 +330,7 @@ class TrainConfig(BaseConfig):
             num_workers=num_worker or self.num_workers,
             pin_memory=True,
             drop_last=drop_last,
-            multiprocessing_context=get_context('fork'),
+            multiprocessing_context=get_context("fork"),
         )
 
     def make_model_conf(self):
@@ -354,11 +357,10 @@ class TrainConfig(BaseConfig):
                 use_checkpoint=self.net_beatgans_gradient_checkpoint,
                 use_new_attention_order=False,
                 resnet_two_cond=self.net_beatgans_resnet_two_cond,
-                resnet_use_zero_module=self.
-                net_beatgans_resnet_use_zero_module,
+                resnet_use_zero_module=self.net_beatgans_resnet_use_zero_module,
             )
         elif self.model_name in [
-                ModelName.beatgans_autoenc,
+            ModelName.beatgans_autoenc,
         ]:
             cls = BeatGANsAutoencConfig
             # supports both autoenc and vaeddpm
@@ -414,8 +416,7 @@ class TrainConfig(BaseConfig):
                 use_checkpoint=self.net_beatgans_gradient_checkpoint,
                 use_new_attention_order=False,
                 resnet_two_cond=self.net_beatgans_resnet_two_cond,
-                resnet_use_zero_module=self.
-                net_beatgans_resnet_use_zero_module,
+                resnet_use_zero_module=self.net_beatgans_resnet_use_zero_module,
                 latent_net_conf=latent_net_conf,
                 resnet_cond_channels=self.net_beatgans_resnet_cond_channels,
             )
@@ -425,54 +426,56 @@ class TrainConfig(BaseConfig):
         return self.model_conf
 
 
-from easydict import EasyDict as edict
 from pathlib import Path
+
 import torch
+from easydict import EasyDict as edict
 from torch.nn import CrossEntropyLoss
 from torchvision import transforms as trans
 
-def get_config(training = True):
+
+def get_config(training=True):
     conf = edict()
-    conf.data_path = Path('data')
-    conf.work_path = Path('work_space/')
-    conf.model_path = conf.work_path/'models'
-    conf.log_path = conf.work_path/'log'
-    conf.save_path = conf.work_path/'save'
-    conf.input_size = [112,112]
+    conf.data_path = Path("data")
+    conf.work_path = Path("work_space/")
+    conf.model_path = conf.work_path / "models"
+    conf.log_path = conf.work_path / "log"
+    conf.save_path = conf.work_path / "save"
+    conf.input_size = [112, 112]
     conf.embedding_size = 512
     conf.use_mobilfacenet = False
     conf.net_depth = 50
     conf.drop_ratio = 0.6
-    conf.net_mode = 'ir_se' # or 'ir'
+    conf.net_mode = "ir_se"  # or 'ir'
     conf.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    conf.test_transform = trans.Compose([
-                    trans.ToTensor(),
-                    trans.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
-                ])
-    conf.data_mode = 'emore'
-    conf.vgg_folder = conf.data_path/'faces_vgg_112x112'
-    conf.ms1m_folder = conf.data_path/'faces_ms1m_112x112'
-    conf.emore_folder = conf.data_path/'faces_emore'
-    conf.batch_size = 100 # irse net depth 50 
-#   conf.batch_size = 200 # mobilefacenet
-#--------------------Training Config ------------------------    
-    if training:        
-        conf.log_path = conf.work_path/'log'
-        conf.save_path = conf.work_path/'save'
-    #     conf.weight_decay = 5e-4
+    conf.test_transform = trans.Compose(
+        [trans.ToTensor(), trans.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+    )
+    conf.data_mode = "emore"
+    conf.vgg_folder = conf.data_path / "faces_vgg_112x112"
+    conf.ms1m_folder = conf.data_path / "faces_ms1m_112x112"
+    conf.emore_folder = conf.data_path / "faces_emore"
+    conf.batch_size = 100  # irse net depth 50
+    #   conf.batch_size = 200 # mobilefacenet
+    # --------------------Training Config ------------------------
+    if training:
+        conf.log_path = conf.work_path / "log"
+        conf.save_path = conf.work_path / "save"
+        #     conf.weight_decay = 5e-4
         conf.lr = 1e-3
-        conf.milestones = [12,15,18]
+        conf.milestones = [12, 15, 18]
         conf.momentum = 0.9
         conf.pin_memory = True
-#         conf.num_workers = 4 # when batchsize is 200
+        #         conf.num_workers = 4 # when batchsize is 200
         conf.num_workers = 3
-        conf.ce_loss = CrossEntropyLoss()    
-#--------------------Inference Config ------------------------
+        conf.ce_loss = CrossEntropyLoss()
+    # --------------------Inference Config ------------------------
     else:
-        conf.facebank_path = conf.data_path/'facebank'
+        conf.facebank_path = conf.data_path / "facebank"
         conf.threshold = 1.5
-        conf.face_limit = 10 
-        #when inference, at maximum detect 10 faces in one image, my laptop is slow
-        conf.min_face_size = 30 
+        conf.face_limit = 10
+        # when inference, at maximum detect 10 faces in one image, my laptop is slow
+        conf.min_face_size = 30
         # the larger this value, the faster deduction, comes with tradeoff in small faces
     return conf
+

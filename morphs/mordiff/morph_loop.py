@@ -1,20 +1,27 @@
 import os
-import sys
-from typing import List, Tuple
+from typing import Tuple
 from tqdm import tqdm
+from .morph_two_images import morph_two_images
 
 
-def morph_loop(morphs: List[Tuple[str, str, str]]) -> None:
-    sys.path.append("./")
-    for line in tqdm(morphs):
-        img1, img2 = line.rstrip().split(" ")
-        img1 = img1.replace("jpg", "png")
-        img2 = img2.replace("jpg", "png")
-        name1 = img1.split(".")[-2].split("/")[-1]
-        name2 = img2.split(".")[-2].split("/")[-1]
-        ofname = f"morphed_{name1}_and_{name2}.png"
-        if os.path.isfile(f"../feret/morph/{ssplit}/{ofname}"):
+def driver(args: Tuple[int, str, str, str]):
+    process_num, src_dir, morph_list_csv, output_dir = args
+    with open(morph_list_csv, "r") as fp:
+        morph_list = fp.readlines()
+
+    for pair in tqdm(morph_list, position=process_num):
+        if not pair.strip():
             continue
-        os.system(
-            f"python morph_two_images.py --img1 {os.path.join('./aligned/', img1)} --img2 {os.path.join('./aligned/', img2)} --output ../feret/morph/{ssplit}"
+
+        splited_pair = pair.strip().split(",")
+        img1_path = splited_pair[0]
+        img2_path = splited_pair[1]
+        img1 = os.path.join(src_dir, img1_path)
+        img2 = os.path.join(src_dir, img2_path)
+        temp = (
+            os.path.split(img1)[1].split(".")[0]
+            + "-vs-"
+            + os.path.split(img2)[1].split(".")[0]
         )
+        output = os.path.join(output_dir, temp + ".png")
+        morph_two_images(img1, img2, output)
