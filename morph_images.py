@@ -3,6 +3,12 @@ from typing import Callable, Tuple
 
 
 def get_morph_driver(morph: str) -> Callable[[Tuple[int, str, str, str]], None]:
+    if morph == "lma":
+        from morphs.lma import driver
+
+        sys.path.append("./morphs/lma/")
+
+        return driver
     if morph == "ubo":
         from morphs.lmaubo import driver
 
@@ -52,10 +58,10 @@ def perform_morphing(
 
 def main() -> None:
     perform_morphing(
-        "mipgan1",
+        "lma",
         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/test/",
         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/test_index.csv",
-        "./test_morphs/mipgan1",
+        "./test_morphs/lma",
     )
 
 

@@ -20,7 +20,7 @@ def morph_two_images(image1: str, image2: str, output: str) -> None:
     model.ema_model.eval()
     model.ema_model.to(device)
 
-    outfolder = output
+    outfolder = os.path.split(output)[0]
     image_size = 256
 
     transform = transforms.Compose(
@@ -79,4 +79,3 @@ def morph_two_images(image1: str, image2: str, output: str) -> None:
     pred = model.render(intp_x, intp, T=20)
     pred = to_pil_image(pred[1].cpu())
     pred.save(output)
-

@@ -5,7 +5,6 @@ import lpips
 import torch
 import torchvision
 from pytorch_fid import fid_score
-from ssim import ssim
 from torch import distributed
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
@@ -15,6 +14,7 @@ from .config import *
 from .diffusion import Sampler
 from .dist_utils import *
 from .renderer import *
+from .ssim import ssim
 
 
 def make_subset_loader(

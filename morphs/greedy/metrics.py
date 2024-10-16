@@ -10,12 +10,11 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from tqdm.autonotebook import tqdm, trange
 
-from ssim import ssim
-
 from .config import *
 from .diffusion import Sampler
 from .dist_utils import *
 from .renderer import *
+from .ssim import ssim
 
 
 def make_subset_loader(

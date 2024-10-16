@@ -5,11 +5,6 @@ from typing import Tuple
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
-from diffusion.diffusion import space_timesteps
-from diffusion.resample import UniformSampler
-from model.latentnet import *
-from model.unet import ScaleAt
-
 from .choices import *
 from .config_base import BaseConfig
 from .dataset import *
@@ -22,7 +17,11 @@ from .diffusion.base import (
     ModelVarType,
     get_named_beta_schedule,
 )
+from .diffusion.diffusion import space_timesteps
+from .diffusion.resample import UniformSampler
 from .model import *
+from .model.latentnet import *
+from .model.unet import ScaleAt
 
 data_paths = {
     "ffhqlmdb256": os.path.expanduser("datasets/ffhq256.lmdb"),

@@ -29,7 +29,11 @@ class MorphDataset(torch.utils.data.Dataset):
         for pair in pairs:
             if not pair.strip():
                 continue
+            if len(pair.split(",")) != 2:
+                continue
             img1, img2 = pair.split(",")
+            img1, img2 = img1.strip(), img2.strip()
+
             fname = img1.split(".")[0] + "-vs-" + img2.split(".")[0] + ".png"
             img1, img2 = os.path.join(src_dir, img1), os.path.join(src_dir, img2)
             fname = os.path.join(outdir, fname)
@@ -523,7 +527,7 @@ def greedy_solve_pf_ode(
 def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, outdir = args
     config = "./morphs/greedy/configs/greedy_dim.yml"
-    batch_size = 32
+    batch_size = 2
 
     with open(config, "r") as f:
         config = yaml.load(f, Loader=yaml.loader.SafeLoader)
@@ -550,7 +554,9 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     loss_fn = None
 
     if "greedy" in config:
-        loss_model = get_arcface_model(config["loss_fn"]["arcface_backbone"])
+        loss_model = get_arcface_model(
+            "./morphs/models/glint360k_cosface_r100_fp16_0.1/backbone.pth"
+        )
         loss_model.eval().to(device)
 
         if config["loss_fn"]["type"] == "zhang_identity_prior":
