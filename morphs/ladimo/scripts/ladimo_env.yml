@@ -1,0 +1,4 @@
+name: magface_env
+channels:
+  - defaults
+prefix: /mnt2/anaconda3/envs/magface_env
