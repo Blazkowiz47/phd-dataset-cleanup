@@ -15,6 +15,12 @@ def get_morph_driver(morph: str) -> Callable[[Tuple[int, str, str, str]], None]:
         sys.path.append("./morphs/lmaubo/")
 
         return driver
+    if morph == "ladimo":
+        from morphs.ladimo import driver
+
+        sys.path.append("./morphs/ladimo/")
+
+        return driver
     if morph == "mipgan1":
         from morphs.mipgan1 import driver
 
@@ -58,10 +64,10 @@ def perform_morphing(
 
 def main() -> None:
     perform_morphing(
-        "lma",
+        "ladimo",
         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/test/",
         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/test_index.csv",
-        "./test_morphs/lma",
+        "./test_morphs/ladimo",
     )
 
 
