@@ -1,13 +1,13 @@
 import os
 from glob import glob
+from multiprocessing import Pool
 from typing import List, Tuple
 
 from numpy.typing import NDArray
-from facenet_pytorch import MTCNN
 from PIL import Image
 from tqdm import tqdm
-from multiprocessing import Pool
 
+from facenet_pytorch import MTCNN
 
 BONAFIDE = "bonafide"
 MORPH = "morph"
@@ -16,8 +16,10 @@ RAW = "raw"
 
 def getpairs(dir: str) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
-    files = glob(os.path.join(dir, RAW, "*", "*.png")) + glob(
-        os.path.join(dir, RAW, "*", "*.jpg")
+    files = (
+        glob(os.path.join(dir, RAW, "*", "*.png"))
+        + glob(os.path.join(dir, RAW, "*", "*.jpg"))
+        + glob(os.path.join(dir, RAW, "*", "*.JPG"))
     )
     for file in files:
         temp = file.split(RAW + "/")[1].replace("png", "jpg")
@@ -58,7 +60,7 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
 
 
 if __name__ == "__main__":
-    num_process = 10
+    num_process = 6
 
     #     printers = ["digital"]
     #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"

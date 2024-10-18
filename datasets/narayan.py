@@ -1,8 +1,9 @@
 import os
 import shutil
 from glob import glob
-from tqdm import tqdm
+
 from PIL import Image
+from tqdm import tqdm
 
 ROOT_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/raw/"
 CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
@@ -140,17 +141,28 @@ def clean_digital_bon() -> None:
 
 
 def reorder_morphinglist() -> None:
-    dir = os.path.join(CLEAN_DIR, "digital", "morphing_list")
-    files = glob(os.path.join(dir, "*", "*", "*", "*.csv"))
+    rdir = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/To_Morphing/Narayan_DB/Source_Dataset/morphing_list"
+    files = glob(
+        os.path.join(
+            rdir,
+            "**",
+            "*.csv",
+        ),
+        recursive=True,
+    )
+
     for fname in files:
-        ssplit, gender, subsec, file = fname.removeprefix(dir + "/").split("/")
+        print(fname.removeprefix(rdir + "/"))
+        ssplit, gender, subsec, file = fname.removeprefix(rdir + "/").split("/")
         odir = os.path.join(CLEAN_DIR, "digital", subsec)
         #         os.remove(os.path.join(odir, gender.lower() + "_" + ssplit + "_" + file))
 
         with open(fname, "r") as fp:
             content = fp.readlines()
 
-        ofile = os.path.join(odir, ssplit + "_indexes.csv")
+        ofile = os.path.join(
+            odir, ("train" if "train" in ssplit.lower() else "test") + "_index.csv"
+        )
 
         #         if os.path.exists(ofile):
         #             os.remove(ofile)
@@ -158,14 +170,10 @@ def reorder_morphinglist() -> None:
 
         with open(ofile, "a+") as fp:
             for line in content:
-                fp.write(
-                    line.replace("Sub_", "aligned/" + ssplit + "/")
-                    .lower()
-                    .replace(".jpg", "_0.jpg")
-                )
+                fp.write(line.replace("Sub_", "").lower().replace(".jpg", "_0.png"))
             fp.write("\n")
 
 
 if __name__ == "__main__":
-    clean_digital_bon()
+    #     clean_digital_bon()
     reorder_morphinglist()
