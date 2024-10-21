@@ -40,7 +40,7 @@ def transform(fname: str) -> torch.Tensor:
 
 
 def get_features(fname: str, model: Module) -> NDArray:
-    inputs = transform(fname)
+    inputs = transform(fname).cuda()
     features = model(inputs)
     features = features.data.detach().cpu().numpy()
     return features.squeeze()

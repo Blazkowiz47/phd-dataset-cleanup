@@ -48,11 +48,13 @@ class NetworkBuilder_inf(nn.Module):
 
 def load_dict_inf(ckpt, cpu_mode, model):
     if os.path.isfile(ckpt):
-        print("=> loading pth from {} ...".format(ckpt))
+        #         print("=> loading pth from {} ...".format(ckpt))
         if cpu_mode:
-            checkpoint = torch.load(ckpt, map_location=torch.device("cpu"))
+            checkpoint = torch.load(
+                ckpt, weights_only=True, map_location=torch.device("cpu")
+            )
         else:
-            checkpoint = torch.load(ckpt)
+            checkpoint = torch.load(ckpt, weights_only=False)
         _state_dict = clean_dict_inf(model, checkpoint["state_dict"])
         model_dict = model.state_dict()
         model_dict.update(_state_dict)

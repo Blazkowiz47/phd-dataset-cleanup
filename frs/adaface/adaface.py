@@ -13,7 +13,7 @@ def get_model(
 ) -> Module:
     # load model and pretrained statedict
     model = net.build_model(architecture)
-    statedict = torch.load(ckpt)["state_dict"]
+    statedict = torch.load(ckpt, weights_only=False)["state_dict"]
     model_statedict = {
         key[6:]: val for key, val in statedict.items() if key.startswith("model.")
     }
@@ -23,14 +23,14 @@ def get_model(
 
 
 def transform(fname: str) -> torch.Tensor:
-    pil_rgb_image = Image.open(fname)
+    pil_rgb_image = Image.open(fname).resize((112, 112))
     np_img = np.array(pil_rgb_image)
     brg_img = ((np_img[:, :, ::-1] / 255.0) - 0.5) / 0.5
-    tensor = torch.tensor([brg_img.transpose(2, 0, 1)]).float()
+    tensor = torch.tensor([np.array(brg_img.transpose(2, 0, 1))]).float()
     return tensor
 
 
 def get_features(fname: str, model: Module) -> NDArray:
-    input = transform(fname)
+    input = transform(fname).cuda()
     features, _ = model(input)
     return features.detach().cpu().numpy().squeeze()

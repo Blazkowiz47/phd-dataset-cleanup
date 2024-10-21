@@ -86,7 +86,6 @@ class ArcFaceONNX:
             1.0 / self.input_std,
             input_size,
             (self.input_mean, self.input_mean, self.input_mean),
-            swapRB=True,
         )
         net_out = self.session.run(self.output_names, {self.input_name: blob})[0]
         return net_out
