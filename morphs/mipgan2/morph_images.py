@@ -129,15 +129,15 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, generated_images_dir = args
 
     data_dir = "./morphs/mipgan2/data"
-    frs_config_path = "./morphs/models/frs/configs/config_ms1m_100.yaml"
-    frs_model_path = "./morphs/models/frs/config_ms1m_100_1006k/best-m-1006000"
-    model_url = "./morphs/models/stylegan2_finetuned_ICAO.pkl"
+    frs_config_path = "./models/frs/configs/config_ms1m_100.yaml"
+    frs_model_path = "./models/frs/config_ms1m_100_1006k/best-m-1006000"
+    model_url = "./models/stylegan2_finetuned_ICAO.pkl"
     model_res = 1024
     optimizer = "adam"
     resnet_image_size = 224
     iterations = 150
     decay_steps = 6
-    load_resnet = "./morphs/models/resnet_18_20191231.h5"
+    load_resnet = "./models/resnet_18_20191231.h5"
     average_best_loss = 0.5
     randomize_noise = False
     tile_dlatents = False

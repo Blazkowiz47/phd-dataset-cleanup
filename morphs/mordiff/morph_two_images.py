@@ -14,7 +14,7 @@ def morph_two_images(image1, image2, output):
     device = "cuda"
     conf = ffhq256_autoenc()
     model = LitModel(conf)
-    state = torch.load("./morphs/models/ffhq/last.ckpt", map_location="cpu")
+    state = torch.load("./models/ffhq/last.ckpt", map_location="cpu")
     model.load_state_dict(state["state_dict"], strict=False)
     model.ema_model.eval()
     model.ema_model.to(device)

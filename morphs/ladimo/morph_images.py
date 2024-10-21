@@ -30,7 +30,7 @@ def load_model_from_config(config, ckpt) -> torch.nn.Module:
 def get_model() -> Tuple[torch.nn.Module, Any]:
     config_dir = "./morphs/ladimo/configs/latent-diffusion/frgc-ldm-vq-f8.yaml"
 
-    ladimo_model_dir = "./morphs/models/logs/2023-11-15T10-04-11_ffhq-ldm-vq-f8/checkpoints/epoch=000096.ckpt"
+    ladimo_model_dir = "./models/logs/2023-11-15T10-04-11_ffhq-ldm-vq-f8/checkpoints/epoch=000096.ckpt"
 
     config = OmegaConf.load(config_dir)
     model = load_model_from_config(config, ladimo_model_dir)
@@ -96,7 +96,7 @@ def driver(args: Tuple[int, str, str, str]):
 
     model, _ = get_model()
     _ = DDIMSampler(model)
-    magface = get_magface_model("./morphs/models/magface/magface_epoch_00025.pth")
+    magface = get_magface_model("./models/magface/magface_epoch_00025.pth")
     model.eval()
     magface.eval()
     model.cuda()

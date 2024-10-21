@@ -13,7 +13,7 @@ def morph_two_images(image1: str, image2: str, output: str) -> None:
     conf = ffhq256_autoenc()
     model = LitModel(conf)
     state = torch.load(
-        os.path.join("./morphs/models/checkpoints", f"{conf.name}/last.ckpt"),
+        os.path.join("./models/checkpoints", f"{conf.name}/last.ckpt"),
         map_location=device,
     )
     model.load_state_dict(state["state_dict"], strict=False)

@@ -536,7 +536,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     conf = ffhq256_autoenc()
     model = LitModel(conf)
     state = torch.load(
-        f"./morphs/models/checkpoints/{conf.name}/last.ckpt", map_location="cpu"
+        f"./models/checkpoints/{conf.name}/last.ckpt", map_location="cpu"
     )
     model.load_state_dict(state["state_dict"], strict=False)
     model.ema_model.eval()
@@ -555,7 +555,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
 
     if "greedy" in config:
         loss_model = get_arcface_model(
-            "./morphs/models/glint360k_cosface_r100_fp16_0.1/backbone.pth"
+            "./models/glint360k_cosface_r100_fp16_0.1/backbone.pth"
         )
         loss_model.eval().to(device)
 

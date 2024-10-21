@@ -1,6 +1,8 @@
 import os
+import json
 import shutil
 from glob import glob
+from typing import List
 from tqdm import tqdm
 from PIL import Image
 
@@ -203,8 +205,61 @@ def clean_raw() -> None:
             shutil.copy(fname, os.path.join(odname, f"{sid}_0.jpg"))
 
 
+def create_indices(fname: str, dirname: str, oname: str) -> None:
+    with open(fname, "r") as fp:
+        subjects = json.load(fp)
+
+    files = glob(os.path.join(dirname, "*.jpg")) + glob(os.path.join(dirname, "*.png"))
+
+    males = {k: v for k, v in subjects.items() if v["gender"] == "m"}
+    females = {k: v for k, v in subjects.items() if v["gender"] == "f"}
+    for sid, _ in males.items():
+        males[sid]["file"] = [
+            os.path.split(f)[1]
+            for f in files
+            if os.path.split(f)[1].split("_")[0] == sid
+        ]
+    for sid, _ in females.items():
+        females[sid]["file"] = [
+            os.path.split(f)[1]
+            for f in files
+            if os.path.split(f)[1].split("_")[0] == sid
+        ]
+
+    pairs: List[str] = []
+
+    for id1 in males:
+        for id2 in males:
+            if id1 == id2:
+                continue
+            pairs.append(f"{males[id1]['file'][-1]},{males[id2]['file'][-1]}\n")
+
+    for id1 in females:
+        for id2 in females:
+            if id1 == id2:
+                continue
+            pairs.append(f"{females[id1]['file'][-1]},{females[id2]['file'][-1]}\n")
+
+    with open(oname, "w+") as fp:
+        fp.writelines(pairs)
+
+
 if __name__ == "__main__":
     #     clean_bonafide()
     #     clean_morph()
     #     clean_probe()
-    clean_raw()
+    #     get_bonafide_stats(
+    #         os.path.join(CLEAN_DIR, "digital", BONAFIDE),
+    #         os.path.join(CLEAN_DIR, "digital", "bonafide_stats.txt"),
+    #     )
+    #     clean_raw()
+    create_indices(
+        os.path.join(CLEAN_DIR, "test_gender.json"),
+        os.path.join(CLEAN_DIR, "digital", ALIGNED, "test"),
+        os.path.join(CLEAN_DIR, "test_index.csv"),
+    )
+    create_indices(
+        os.path.join(CLEAN_DIR, "train_gender.json"),
+        os.path.join(CLEAN_DIR, "digital", ALIGNED, "train"),
+        os.path.join(CLEAN_DIR, "train_index.csv"),
+    )

@@ -117,16 +117,16 @@ def load_image_frs(dir_path, image_size):
 def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, output_dir = args
 
-    frs_model_path = "./morphs/models/frs/config_ms1m_100_1006k/best-m-1006000"
-    frs_config_path = "./morphs/models/frs/configs/config_ms1m_100.yaml"
+    frs_model_path = "./models/frs/config_ms1m_100_1006k/best-m-1006000"
+    frs_config_path = "./models/frs/configs/config_ms1m_100.yaml"
 
     resnet_image_size = 256
     iterations = 150
     decay_steps = 6
-    load_resnet = "./morphs/models/finetuned_resnet.h5"
+    load_resnet = "./models/finetuned_resnet.h5"
     average_best_loss = 0.5
     optimizer = "adam"
-    model_url = "./morphs/models/StyleGAN_finetuned_ICAO.pkl"
+    model_url = "./models/StyleGAN_finetuned_ICAO.pkl"
     model_res = 1024
     data_dir = "./morphs/mipgan1/data"
     randomize_noise = False

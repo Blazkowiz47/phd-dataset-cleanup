@@ -11,4 +11,4 @@ def get_magface_model(path):
     return model
 
 
-get_magface_model("./morphs/models/magface/magface_epoch_00025.pth")
+get_magface_model("./models/magface/magface_epoch_00025.pth")

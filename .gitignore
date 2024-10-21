@@ -4,5 +4,5 @@
 *.onnx
 *.npy
 *.zip
-morphs/models/*
+models/*
 test_morphs/*
