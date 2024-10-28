@@ -163,6 +163,7 @@ def create_indices(fname: str, dirname: str, oname: str) -> None:
 
     males = {k: v for k, v in subjects.items() if v["gender"] == "m"}
     females = {k: v for k, v in subjects.items() if v["gender"] == "f"}
+    print(fname, len(males), len(females))
     for sid, _ in males.items():
         males[sid]["file"] = [
             os.path.split(f)[1]

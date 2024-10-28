@@ -70,12 +70,16 @@ if __name__ == "__main__":
     #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
     #     driver(CLEAN_DIR, printers, num_process)
 
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
     printers = ["digital"]
-    for printer in printers:
-        dir = os.path.join(CLEAN_DIR, printer)
-        subds = os.listdir(dir)
-        subds = [
-            d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
-        ]
-        driver(dir, subds, num_process)
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/"
+    driver(CLEAN_DIR, printers, num_process)
+
+#     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
+#     printers = ["digital"]
+#     for printer in printers:
+#         dir = os.path.join(CLEAN_DIR, printer)
+#         subds = os.listdir(dir)
+#         subds = [
+#             d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
+#         ]
+#         driver(dir, subds, num_process)

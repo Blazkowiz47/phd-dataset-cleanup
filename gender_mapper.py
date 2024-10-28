@@ -13,14 +13,8 @@ def get_mappings(
     subjectid = 0
     sids = list(subjects.keys())
     sample = 0
-    if os.path.isfile(fpath):
-        with open(fpath, "r+") as fp:
-            lines = fp.readlines()
-            if lines:
-                prevresults = json.load(fp)
-                for k, v in prevresults.items():
-                    subjects[k] = v
     gender = None
+
     while subjectid < len(sids):
         sid = sids[subjectid]
         if not gender and "gender" in subjects[sid]:
@@ -55,10 +49,12 @@ def get_mappings(
 
 
 def splitted_datasets(rdir: str, oname: str) -> None:
+    if not os.path.isdir(rdir):
+        return
     files = [
         str(file)
         for file in Path(rdir).rglob("*")
-        if file.suffix.lower() == ".png" or file.suffix.lower() == "jpg"
+        if file.suffix.lower() == ".png" or file.suffix.lower() == ".jpg"
     ]
     subjects: Dict[str, Dict[str, List[str] | str]] = {}
     for file in files:
@@ -91,6 +87,7 @@ if __name__ == "__main__":
     datasets = [
         #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database/digital/aligned/",
         #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/digital/aligned/",
+        #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/digital/aligned/",
         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/",
     ]
     for dataset in datasets:
@@ -102,11 +99,11 @@ if __name__ == "__main__":
                 ),
             )
 
-    datasets = [
-        "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/ms40/raw",
-    ]
-    for dataset in datasets:
-        unsplitted_datasets(
-            dataset,
-            os.path.join(dataset, "gender.json"),
-        )
+#     datasets = [
+#         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/ms40/raw",
+#     ]
+#     for dataset in datasets:
+#         unsplitted_datasets(
+#             dataset,
+#             os.path.join(dataset, "gender.json"),
+#         )

@@ -1,5 +1,6 @@
 import argparse
 import csv
+import gc
 import glob
 import os
 import pickle
@@ -125,7 +126,7 @@ def load_image_frs(dir_path, image_size):
     return (np.array(images), np.array(images_f), fns)
 
 
-def driver(args: Tuple[int, str, str, str]) -> None:
+def _driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, generated_images_dir = args
 
     data_dir = "./morphs/mipgan2/data"
@@ -189,7 +190,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     decay_steps *= 0.01 * iterations  # Calculate steps as a percent of total iterations
 
     if len(ref_images) == 0:
-        return
+        return True
 
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(generated_images_dir, exist_ok=True)
@@ -264,7 +265,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     perceptual_model.build_perceptual_model(generator, discriminator_network)
 
     ff_model = None
-
+    done_imgs = 0
     for images_batch in tqdm(
         split_to_batches(ref_images, 1),
         total=len(ref_images) // 1,
@@ -347,5 +348,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
             img.save(os.path.join(generated_images_dir, f"{img_name}.png"), "PNG")
 
         generator.reset_dlatents()
-        del generated_images
-        del generated_dlatents
+
+
+def driver(args: Tuple[int, str, str, str]) -> None:
+    _driver(args)

@@ -1,4 +1,5 @@
 import sys
+import os
 from typing import Callable, Tuple
 
 
@@ -59,24 +60,50 @@ def perform_morphing(
     morph: str, src_dir: str, morph_list_csv: str, output_dir: str
 ) -> None:
     morpher = get_morph_driver(morph)
-    morpher((0, src_dir, morph_list_csv, output_dir))
+    flag = True
+    while flag:
+        try:
+            morpher((0, src_dir, morph_list_csv, output_dir))
+            flag = False
+        except KeyboardInterrupt:
+            break
+        except ValueError:
+            pass
 
 
 def main() -> None:
-    perform_morphing(
-        "ladimo",
-        "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/test/",
-        "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/test_index.csv",
-        "./test_morphs/ladimo",
-    )
+    #     perform_morphing(
+    #         "ladimo",
+    #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/test/",
+    #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/test_index.csv",
+    #         "./test_morphs/ladimo",
+    #     )
+
+    ssplits = ["test", "train"]
+    morphs = ["mipgan2", "mipgan1", "lma"]
+    datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
+    for morph in morphs:
+        for ssplit in ssplits:
+            # Normal datasets
+            for dataset in datasets:
+                perform_morphing(
+                    morph,
+                    f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/aligned/{ssplit}/",
+                    f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/{ssplit}_index.csv",
+                    f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/{ssplit}",
+                )
+
+            # narayan dataset
+            narayan_rdir = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/digital"
+            for dataset in os.listdir(narayan_rdir):
+                if not os.path.isdir(os.path.join(narayan_rdir, dataset)):
+                    continue
+                aligned_dir = os.path.join(narayan_rdir, dataset, "aligned", ssplit)
+                csvfile = os.path.join(narayan_rdir, dataset, f"{ssplit}_index.csv")
+                output_dir = os.path.join(narayan_rdir, dataset, "morph", morph, ssplit)
+                perform_morphing(morph, aligned_dir, csvfile, output_dir)
 
 
-#     perform_morphing(
-#         "mipgan2",
-#         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/test/",
-#         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/test_index.csv",
-#         "./test_morphs/mipgan2",
-#     )
 #     perform_morphing(
 #         "pipe",
 #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/test/",

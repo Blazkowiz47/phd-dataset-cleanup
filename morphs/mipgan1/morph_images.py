@@ -1,4 +1,5 @@
 import argparse
+import gc
 import csv
 import os
 import pickle
@@ -115,6 +116,10 @@ def load_image_frs(dir_path, image_size):
 
 
 def driver(args: Tuple[int, str, str, str]) -> None:
+    _driver(args)
+
+
+def _driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, output_dir = args
 
     frs_model_path = "./models/frs/config_ms1m_100_1006k/best-m-1006000"
@@ -126,7 +131,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     load_resnet = "./models/finetuned_resnet.h5"
     average_best_loss = 0.5
     optimizer = "adam"
-    model_url = "./models/StyleGAN_finetuned_ICAO.pkl"
+    model_url = "./morphs/models/StyleGAN_finetuned_ICAO.pkl"
     model_res = 1024
     data_dir = "./morphs/mipgan1/data"
     randomize_noise = False
@@ -189,7 +194,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     # ref_images = list(filter(os.path.isfile, ref_images))
 
     if len(ref_images) == 0:
-        return
+        return True
 
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
@@ -268,6 +273,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
 
     # Main loop
     # Optimize (only) dlatents by minimizing perceptual loss between reference and generated images in feature space
+
     for images_batch in tqdm(
         split_to_batches(ref_images, 1),
         total=len(ref_images) // 1,
@@ -347,3 +353,4 @@ def driver(args: Tuple[int, str, str, str]) -> None:
             img.save(os.path.join(output_dir, f"{img_name}.png"), "PNG")
 
         generator.reset_dlatents()
+        gc.collect()

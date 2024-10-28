@@ -81,7 +81,7 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
 
 
 if __name__ == "__main__":
-    num_process = 3
+    num_process = 4
 
     printers = ["digital"]
     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"

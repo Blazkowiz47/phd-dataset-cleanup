@@ -13,6 +13,7 @@ LANDMARKS_MODEL_URL = "http://dlib.net/files/shape_predictor_68_face_landmarks.d
 
 ALIGNED = "aligned"
 RAW = "raw"
+BONAFIDE = "bonafide"
 
 
 def unpack_bz2(src_path):
@@ -23,24 +24,28 @@ def unpack_bz2(src_path):
     return dst_path
 
 
-def getpairs(dir: str) -> List[Tuple[str, str]]:
+def getpairs(rdir: str, odir: str) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
-    files = glob(os.path.join(dir, RAW, "*", "*.png")) + glob(
-        os.path.join(dir, RAW, "*", "*.jpg")
+    files = glob(os.path.join(rdir, RAW, "*", "*.png")) + glob(
+        os.path.join(rdir, RAW, "*", "*.jpg")
     )
+
     for file in files:
         temp = file.split(RAW + "/")[1].replace("jpg", "png")
-        if os.path.isfile(os.path.join(dir, temp.replace("png", "JPG"))):
-            Image.open(os.path.join(dir, temp.replace("png", "JPG"))).convert(
+
+        if os.path.isfile(os.path.join(rdir, temp.replace("png", "JPG"))):
+            Image.open(os.path.join(rdir, temp.replace("png", "JPG"))).convert(
                 "RGB"
-            ).save(os.path.join(dir, temp))
-            os.remove(os.path.join(dir, temp.replace("png", "JPG")))
+            ).save(os.path.join(rdir, temp))
+            os.remove(os.path.join(rdir, temp.replace("png", "JPG")))
             continue
 
-        if os.path.isfile(os.path.join(dir, temp)):
+        ofname = os.path.join(odir, temp)
+        os.makedirs(os.path.split(ofname)[0], exist_ok=True)
+        if os.path.isfile(ofname):
             continue
 
-        pairs.append((file, os.path.join(dir, temp)))
+        pairs.append((file, ofname))
     return pairs
 
 
@@ -51,13 +56,12 @@ def align_images(args: Tuple[int, List[Tuple[str, str]]]) -> None:
     """
     process_num, pairs = args
 
-    landmarks_model_path = unpack_bz2(
-        get_file(
-            "shape_predictor_68_face_landmarks.dat.bz2",
-            LANDMARKS_MODEL_URL,
-            cache_subdir="temp",
-        )
-    )
+    landmarks_model_path = "./models/temp/shape_predictor_68_face_landmarks.dat"
+    #         get_file(
+    #             "shape_predictor_68_face_landmarks.dat.bz2",
+    #             LANDMARKS_MODEL_URL,
+    #             cache_subdir="temp",
+    #         )
     landmarks_detector = LandmarksDetector(landmarks_model_path)
     for fname, ofname in tqdm.tqdm(pairs, position=process_num):
         for _, face_landmarks in enumerate(
@@ -72,8 +76,13 @@ def driver(
 ) -> None:
     args: List[Tuple[str, str]] = []
     for printer in printers:
-        if os.path.isdir(os.path.join(CLEAN_DIR, printer, ALIGNED, RAW)):
-            args.extend(getpairs(os.path.join(CLEAN_DIR, printer, ALIGNED)))
+        #         if os.path.isdir(os.path.join(CLEAN_DIR, printer, ALIGNED, RAW)):
+        args.extend(
+            getpairs(
+                os.path.join(CLEAN_DIR, printer, BONAFIDE),
+                os.path.join(CLEAN_DIR, printer, ALIGNED),
+            )
+        )
 
     if not args:
         print("No raw images to align:", CLEAN_DIR)
@@ -87,15 +96,22 @@ def driver(
 
 
 if __name__ == "__main__":
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
+    #     driver(CLEAN_DIR)
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
+    #     driver(CLEAN_DIR)
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database/"
+    #     driver(CLEAN_DIR)
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/digital/"
+    #     subds = os.listdir(CLEAN_DIR)
+    #     subds = [
+    #         d for d in subds if "." not in d and os.path.isdir(os.path.join(CLEAN_DIR, d))
+    #     ]
+    #     driver(CLEAN_DIR, printers=subds)
+
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/lfc"
     driver(CLEAN_DIR)
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
-    driver(CLEAN_DIR)
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database/"
-    driver(CLEAN_DIR)
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/digital/"
-    subds = os.listdir(CLEAN_DIR)
-    subds = [
-        d for d in subds if "." not in d and os.path.isdir(os.path.join(CLEAN_DIR, d))
-    ]
-    driver(CLEAN_DIR, printers=subds)
+#     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/ms40/"
+#     driver(CLEAN_DIR)
+#     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill"
+#     driver(CLEAN_DIR)

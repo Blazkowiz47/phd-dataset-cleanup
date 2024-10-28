@@ -27,4 +27,3 @@ def driver(args: Tuple[int, str, str, str]):
         )
         output = os.path.join(output_dir, temp + ".png")
         morph_two_images(img1, img2, output)
-
