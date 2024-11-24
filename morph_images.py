@@ -1,6 +1,10 @@
 import sys
+import subprocess
 import os
+import csv
 from typing import Callable, Tuple
+
+from torch import e
 
 
 def get_morph_driver(morph: str) -> Callable[[Tuple[int, str, str, str]], None]:
@@ -82,21 +86,27 @@ def main() -> None:
     ssplits = ["test", "train"]
     morphs = ["mipgan2", "mipgan1", "lma"]
     #     morphs = ["pipe", "mordiff"]
-    #     datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
-    datasets = ["frgc", "abc_database", "frill", "ms40"]
+    datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
+    #     datasets = ["frgc", "abc_database", "frill", "ms40"]
+    top_ks = [6, 3, 4, 3, 3]
     for morph in morphs:
         for ssplit in ssplits:
             # Normal datasets
-            for dataset in datasets:
+            for dataset, top_k in zip(datasets, top_ks):
                 if os.path.isfile(
                     f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/{ssplit}_index.csv"
                 ):
-                    perform_morphing(
-                        morph,
-                        f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/aligned/{ssplit}/",
-                        f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/{ssplit}_index.csv",
-                        f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/{ssplit}",
+                    rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/aligned/{ssplit}/"
+                    csv_file = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/{ssplit}_index.csv"
+                    odir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/{ssplit}"
+                    temp_csv_file = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/top_3_{ssplit}_index.csv"
+                    #                     if not os.path.isfile(temp_csv_file):
+                    subprocess.call(
+                        f'source ~/miniconda3/etc/profile.d/conda.sh; conda activate torch;python get_topk_frs_match.py -o "{temp_csv_file}" -i "{csv_file}" -r "{rdir}" -k {top_k}',
+                        shell=True,
+                        executable="/bin/bash",
                     )
+                    perform_morphing(morph, rdir, temp_csv_file, odir)
 
             # narayan dataset
             narayan_rdir = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/digital"

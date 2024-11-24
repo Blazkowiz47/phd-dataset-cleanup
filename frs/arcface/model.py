@@ -50,7 +50,6 @@ class ArcFaceONNX:
         outputs = self.session.get_outputs()
         output_names = []
         for out in outputs:
-            print(out.name)
             output_names.append(out.name)
         self.input_name = input_name
         self.output_names = output_names
@@ -79,8 +78,8 @@ class ArcFaceONNX:
         if not isinstance(imgs, list):
             imgs = [imgs]
         input_size = self.input_size
-        print(1.0 / self.input_std)
-        print(input_size)
+        #         print(1.0 / self.input_std)
+        #         print(input_size)
         blob = cv2.dnn.blobFromImages(
             imgs,
             1.0 / self.input_std,
@@ -96,7 +95,7 @@ class ArcFaceONNX:
         return net_out
 
 
-def get_model(ckpt: str = "./models/arcface/model.onnx"):
+def get_model(ckpt: str = "./models/frs_models/arcface/model.onnx"):
     return ArcFaceONNX(ckpt)
 
 
