@@ -116,12 +116,27 @@ def load_image_frs(dir_path, image_size):
 
 
 def driver(args: Tuple[int, str, str, str]) -> None:
-    _driver(args)
-
-
-def _driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, output_dir = args
+    with open(morph_list_csv, "r") as mr:
+        lines = mr.readlines()
 
+    n = 50
+    chunks = [lines[i : i + n] for i in range(0, len(lines), n)]
+    for chunk in chunks:
+        temp_csv = "temp_morph.csv"
+        with open(temp_csv, "w+") as fp:
+            fp.writelines(chunk)
+
+        os.system(
+            f'python morph_partial.py {process_num} "{src_dir}" "{temp_csv}" "{output_dir}" "mipgan1"'
+        )
+        print("Done")
+        os.remove(temp_csv)
+
+
+def _driver(
+    process_num: int, src_dir: str, morph_list_csv: str, output_dir: str
+) -> None:
     frs_model_path = "./models/frs/config_ms1m_100_1006k/best-m-1006000"
     frs_config_path = "./models/frs/configs/config_ms1m_100.yaml"
 
@@ -131,7 +146,7 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
     load_resnet = "./models/finetuned_resnet.h5"
     average_best_loss = 0.5
     optimizer = "adam"
-    model_url = "./morphs/models/StyleGAN_finetuned_ICAO.pkl"
+    model_url = "./models/StyleGAN_finetuned_ICAO.pkl"
     model_res = 1024
     data_dir = "./morphs/mipgan1/data"
     randomize_noise = False
@@ -353,4 +368,7 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
             img.save(os.path.join(output_dir, f"{img_name}.png"), "PNG")
 
         generator.reset_dlatents()
-        gc.collect()
+
+
+if __name__ == "__main__":
+    _driver()

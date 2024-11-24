@@ -1,3 +1,3 @@
-from morph_loop import driver
+from .morph_loop import driver
 
 __all__ = ["driver"]

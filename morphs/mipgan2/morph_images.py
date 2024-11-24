@@ -126,9 +126,46 @@ def load_image_frs(dir_path, image_size):
     return (np.array(images), np.array(images_f), fns)
 
 
-def _driver(args: Tuple[int, str, str, str]) -> None:
-    process_num, src_dir, morph_list_csv, generated_images_dir = args
+def driver(args: Tuple[int, str, str, str]) -> None:
+    process_num, src_dir, morph_list_csv, output_dir = args
+    with open(morph_list_csv, "r") as mr:
+        lines = mr.readlines()
 
+    remaining_lines = []
+    for line in lines:
+        if len(line.split(",")) == 2:
+            img1, img2 = line.split(",")
+            img1, img2 = img1.split(".")[0], img2.split(".")[0]
+            morph_img = os.path.join(output_dir, img1 + "-vs-" + img2 + ".png")
+            if not os.path.isfile(morph_img):
+                remaining_lines.append(line)
+
+    if len(remaining_lines) == 0:
+        print(src_dir, len(lines), len(remaining_lines))
+        return
+
+    lines = remaining_lines
+
+    n = 50
+    chunks = [lines[i : i + n] for i in range(0, len(lines), n)]
+    for chunk in chunks:
+        temp_csv = "temp_morph.csv"
+        with open(temp_csv, "w+") as fp:
+            fp.writelines(chunk)
+
+        os.system(
+            f'python morph_partial.py {process_num} "{src_dir}" "{temp_csv}" "{output_dir}" "mipgan2"'
+        )
+
+        print(src_dir, len(lines), len(remaining_lines))
+        print("Done")
+        os.remove(temp_csv)
+
+
+def _driver(
+    process_num: int, src_dir: str, morph_list_csv: str, output_dir: str
+) -> None:
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
     data_dir = "./morphs/mipgan2/data"
     frs_config_path = "./models/frs/configs/config_ms1m_100.yaml"
     frs_model_path = "./models/frs/config_ms1m_100_1006k/best-m-1006000"
@@ -190,10 +227,10 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
     decay_steps *= 0.01 * iterations  # Calculate steps as a percent of total iterations
 
     if len(ref_images) == 0:
-        return True
+        return
 
     os.makedirs(data_dir, exist_ok=True)
-    os.makedirs(generated_images_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     tflib.init_tf()
     model_file = glob.glob(model_url)
@@ -202,10 +239,10 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
     else:
         raise Exception("Failed to find the model")
     _, discriminator_network, Gs_network = pickle.load(model_file)
-
+    batch_size = 1
     generator = Generator(
         Gs_network,
-        1,
+        batch_size,
         clipping_threshold=clipping_threshold,
         tiled_dlatent=tile_dlatents,
         model_res=model_res,
@@ -213,7 +250,7 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
     )
     ags = argparse.Namespace(
         morph_list_CSV=morph_list_csv,
-        generated_images_dir=generated_images_dir,
+        generated_images_dir=output_dir,
         dlatent_dir="./latent_representations/",
         data_dir="./morphs/mipgan2/data",
         src_dir=src_dir,
@@ -281,9 +318,7 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
                 name_temp.append(filename.split(".")[0])
             names.append("-vs-".join(name_temp))
 
-        if fileflag or os.path.isfile(
-            os.path.join(generated_images_dir, f"{names[0]}.png")
-        ):
+        if fileflag or os.path.isfile(os.path.join(output_dir, f"{names[0]}.png")):
             continue
 
         perceptual_model.set_reference_images(images_batch, names[0])
@@ -345,10 +380,10 @@ def _driver(args: Tuple[int, str, str, str]) -> None:
             generated_images, generated_dlatents, images_batch, names
         ):
             img = Image.fromarray(img_array, "RGB")
-            img.save(os.path.join(generated_images_dir, f"{img_name}.png"), "PNG")
+            img.save(os.path.join(output_dir, f"{img_name}.png"), "PNG")
 
         generator.reset_dlatents()
 
 
-def driver(args: Tuple[int, str, str, str]) -> None:
-    _driver(args)
+if __name__ == "__main__":
+    _driver()

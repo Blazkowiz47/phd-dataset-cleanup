@@ -777,3 +777,4 @@ class PerceptualModel:
                 else:
                     _, loss, lr = self.sess.run(fetch_ops)
                     yield {"loss": loss, "lr": lr}
+
