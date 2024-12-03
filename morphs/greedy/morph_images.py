@@ -37,6 +37,9 @@ class MorphDataset(torch.utils.data.Dataset):
             fname = img1.split(".")[0] + "-vs-" + img2.split(".")[0] + ".png"
             img1, img2 = os.path.join(src_dir, img1), os.path.join(src_dir, img2)
             fname = os.path.join(outdir, fname)
+            os.makedirs(outdir, exist_ok=True)
+            if os.path.isfile(fname):
+                continue
             self.files.append((img1, img2, fname))
 
         transform = [
@@ -527,7 +530,7 @@ def greedy_solve_pf_ode(
 def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, outdir = args
     config = "./morphs/greedy/configs/greedy_dim.yml"
-    batch_size = 2
+    batch_size = 16
 
     with open(config, "r") as f:
         config = yaml.load(f, Loader=yaml.loader.SafeLoader)

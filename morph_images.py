@@ -4,8 +4,6 @@ import os
 import csv
 from typing import Callable, Tuple
 
-from torch import e
-
 
 def get_morph_driver(morph: str) -> Callable[[Tuple[int, str, str, str]], None]:
     if morph == "lma":
@@ -84,9 +82,10 @@ def main() -> None:
     #     )
 
     ssplits = ["test", "train"]
-    morphs = ["mipgan2", "mipgan1", "lma"]
-    #     morphs = ["pipe", "mordiff"]
+    morphs = ["lma"]
+    morphs = ["greedy"]
     datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
+    datasets = ["feret", "frgc"]
     #     datasets = ["frgc", "abc_database", "frill", "ms40"]
     top_ks = [6, 3, 4, 3, 3]
     for morph in morphs:

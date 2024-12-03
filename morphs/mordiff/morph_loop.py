@@ -23,5 +23,8 @@ def driver(args: Tuple[int, str, str, str]):
             + "-vs-"
             + os.path.split(img2)[1].split(".")[0]
         )
+        os.makedirs(output_dir, exist_ok=True)
         output = os.path.join(output_dir, temp + ".png")
+        if os.path.isfile(output):
+            continue
         morph_two_images(img1, img2, output)

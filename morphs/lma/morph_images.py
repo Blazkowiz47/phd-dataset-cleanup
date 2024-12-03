@@ -182,6 +182,9 @@ def driver(args: Tuple[int, str, str, str]):
             + os.path.split(img2)[1].split(".")[0]
         )
         output = os.path.join(output_dir, temp + ".png")
+        if os.path.isfile(output):
+            continue
+
         morphed_image = morph(img1, img2)
         os.makedirs(output_dir, exist_ok=True)
         Image.fromarray(morphed_image).save(output)
