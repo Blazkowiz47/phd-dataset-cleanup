@@ -15,7 +15,7 @@ import taming.data.utils as bdu
 def give_synsets_from_indices(indices, path_to_yaml="data/imagenet_idx_to_synset.yaml"):
     synsets = []
     with open(path_to_yaml) as f:
-        di2s = yaml.load(f)
+        di2s = yaml.safe_load(f)
     for idx in indices:
         synsets.append(str(di2s[idx]))
     print("Using {} different synsets for construction of Restriced Imagenet.".format(len(synsets)))

@@ -226,7 +226,7 @@ class Trainer:
                         
 if __name__ == '__main__':
     args = parse_args()
-    config = yaml.load(open(args.config_path))
+    config = yaml.safe_load(open(args.config_path))
     trainer = Trainer(config)
     trainer.train()
 

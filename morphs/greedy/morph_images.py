@@ -533,7 +533,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     batch_size = 16
 
     with open(config, "r") as f:
-        config = yaml.load(f, Loader=yaml.loader.SafeLoader)
+        config = yaml.safe_load(f)
 
     device = "cuda"
     conf = ffhq256_autoenc()

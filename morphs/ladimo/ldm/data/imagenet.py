@@ -19,7 +19,7 @@ from ldm.modules.image_degradation import degradation_fn_bsr, degradation_fn_bsr
 
 def synset2idx(path_to_yaml="data/index_synset.yaml"):
     with open(path_to_yaml) as f:
-        di2s = yaml.load(f)
+        di2s = yaml.safe_load(f)
     return dict((v,k) for k,v in di2s.items())
 
 

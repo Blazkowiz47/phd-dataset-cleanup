@@ -330,7 +330,7 @@ class PerceptualModel:
         self.add_placeholder("ref_embedding_sub2")
 
         # Load FRS model
-        self.arcface_config = yaml.load(open(self.frs_config_path))
+        self.arcface_config = yaml.safe_load(open(self.frs_config_path))
         embeddings_morph, _ = model.get_embd(
             self.generated_image_arcface, False, False, self.arcface_config
         )
@@ -777,4 +777,3 @@ class PerceptualModel:
                 else:
                     _, loss, lr = self.sess.run(fetch_ops)
                     yield {"loss": loss, "lr": lr}
-

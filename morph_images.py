@@ -85,9 +85,9 @@ def main() -> None:
     morphs = ["lma"]
     morphs = ["greedy"]
     datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
-    datasets = ["feret", "frgc"]
+    datasets = ["frgc", "feret"]
     #     datasets = ["frgc", "abc_database", "frill", "ms40"]
-    top_ks = [6, 3, 4, 3, 3]
+    top_ks = [9, 6, 4, 3, 3]
     for morph in morphs:
         for ssplit in ssplits:
             # Normal datasets

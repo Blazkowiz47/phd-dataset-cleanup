@@ -413,7 +413,7 @@ def main():
     args, other_args = parser.parse_known_args()
 
     # Extract FRS embds
-    config = yaml.load(open(args.frs_config_path))
+    config = yaml.safe_load(open(args.frs_config_path))
     images = tf.placeholder(
         dtype=tf.float32,
         shape=[None, config["image_size"], config["image_size"], 3],

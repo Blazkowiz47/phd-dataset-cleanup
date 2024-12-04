@@ -112,7 +112,11 @@ def load_image_frs(dir_path, image_size):
         paths = [dir_path]
     images = []
     images_f = []
+    fns = []
     for path in tqdm(paths, desc="Loading frs"):
+        if ".png" not in path:
+            continue
+
         img = imread(os.path.join(dir_path, path))
         img = np.array(Image.fromarray(img).resize((image_size, image_size)))
         # img = misc.imresize(img, [image_size, image_size])
@@ -122,7 +126,8 @@ def load_image_frs(dir_path, image_size):
         img_f = img_f / 127.5 - 1.0
         images.append(img)
         images_f.append(img_f)
-    fns = [os.path.basename(p) for p in paths]
+        fns.append(os.path.basename(path))
+
     return (np.array(images), np.array(images_f), fns)
 
 
