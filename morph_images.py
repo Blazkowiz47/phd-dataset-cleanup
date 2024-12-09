@@ -83,7 +83,7 @@ def main() -> None:
 
     ssplits = ["test", "train"]
     morphs = ["lma"]
-    morphs = ["greedy"]
+    morphs = ["mipgan2", "mipgan1"]
     datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
     datasets = ["frgc", "feret"]
     #     datasets = ["frgc", "abc_database", "frill", "ms40"]
@@ -97,7 +97,7 @@ def main() -> None:
                 ):
                     rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/aligned/{ssplit}/"
                     csv_file = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/{ssplit}_index.csv"
-                    odir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/{ssplit}"
+                    odir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/raw/{ssplit}"
                     temp_csv_file = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/top_3_{ssplit}_index.csv"
                     #                     if not os.path.isfile(temp_csv_file):
                     subprocess.call(

@@ -25,6 +25,7 @@ def get_model(
 preprocess = transforms.Compose(
     [
         transforms.ToTensor(),
+        transforms.Resize((112, 112)),
         transforms.Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0]),
     ]
 )
@@ -41,6 +42,7 @@ def transform(fname: str) -> torch.Tensor:
 
 def get_features(fname: str, model: Module) -> NDArray:
     inputs = transform(fname).cuda()
+    inputs = inputs.unsqueeze(dim=0)
     features = model(inputs)
     features = features.data.detach().cpu().numpy()
     return features.squeeze()
