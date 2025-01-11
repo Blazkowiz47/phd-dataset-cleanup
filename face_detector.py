@@ -39,11 +39,14 @@ def facedetect(args: Tuple[int, List[Tuple[str, str]]]) -> None:
 def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
     args: List[Tuple[str, str]] = []
     for printer in printers:
-        if os.path.isdir(os.path.join(CLEAN_DIR, printer, "bonafide", RAW)):
-            args.extend(getpairs(os.path.join(CLEAN_DIR, printer, "bonafide")))
+        # if os.path.isdir(os.path.join(CLEAN_DIR, printer, "bonafide", RAW)):
+        #     args.extend(getpairs(os.path.join(CLEAN_DIR, printer, "bonafide")))
 
         if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph")):
             for morph in os.listdir(os.path.join(CLEAN_DIR, printer, "morph")):
+                if "lmaubo" != morph:
+                    continue
+
                 if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph", morph, RAW)):
                     print(os.path.join(CLEAN_DIR, printer, "morph", morph, RAW))
                     args.extend(
@@ -72,12 +75,20 @@ if __name__ == "__main__":
     #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/"
     #     driver(CLEAN_DIR, printers, num_process)
 
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
+    # printers = ["digital"]
+    # for printer in printers:
+    #     dir = os.path.join(CLEAN_DIR, printer)
+    #     subds = os.listdir(dir)
+    #     subds = [
+    #         d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
+    #     ]
+    #     driver(dir, subds, num_process)
+
+    # printers = ["digital"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/synonot/"
+    # driver(CLEAN_DIR, printers, num_process)
+
     printers = ["digital"]
-    for printer in printers:
-        dir = os.path.join(CLEAN_DIR, printer)
-        subds = os.listdir(dir)
-        subds = [
-            d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
-        ]
-        driver(dir, subds, num_process)
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database"
+    driver(CLEAN_DIR, printers, num_process)

@@ -12,8 +12,8 @@ from frs import get_frs_initializers
 BONAFIDE = "bonafide"
 MORPH = "morph"
 BACKBONES = [
-    #     "adaface",
-    #     "magface",
+    "adaface",
+    "magface",
     "arcface",
 ]
 FACEDETECT = "facedetect"
@@ -78,6 +78,9 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
 
                 if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph")):
                     for morph in os.listdir(os.path.join(CLEAN_DIR, printer, "morph")):
+                        if morph != "greedy":
+                            continue
+
                         if os.path.isdir(
                             os.path.join(CLEAN_DIR, printer, "morph", morph, FACEDETECT)
                         ):
@@ -134,20 +137,28 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
 if __name__ == "__main__":
     num_process = 6
 
-    printers = ["digital"]
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
+    # printers = ["digital"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/synonot"
+    # driver(CLEAN_DIR, printers, num_process)
+
+    printers = ["digital", "dnp", "rico"]
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database"
     driver(CLEAN_DIR, printers, num_process)
 
-    #     printers = ["dnp", "digital", "rico"]
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
-    driver(CLEAN_DIR, printers, num_process)
+    # printers = ["digital"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc"
+    # driver(CLEAN_DIR, printers, num_process)
 
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
-    printers = ["digital"]
-    for printer in printers:
-        dir = os.path.join(CLEAN_DIR, printer)
-        subds = os.listdir(dir)
-        subds = [
-            d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
-        ]
-        driver(dir, subds, num_process)
+    # printers = ["dnp", "digital", "rico"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret"
+    # driver(CLEAN_DIR, printers, num_process)
+
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan"
+    # printers = ["digital"]
+    # for printer in printers:
+    #     dir = os.path.join(CLEAN_DIR, printer)
+    #     subds = os.listdir(dir)
+    #     subds = [
+    #         d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
+    #     ]
+    #     driver(dir, subds, num_process)
