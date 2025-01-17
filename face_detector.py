@@ -27,9 +27,6 @@ def getpairs(dir: str) -> List[Tuple[str, str]]:
     return pairs
 
 
-def normalise(x: NDArray) -> NDArray:
-    return (x - x.min()) / (x.max() - x.min())
-
 
 def facedetect(args: Tuple[int, List[Tuple[str, str]]]) -> None:
     mtcnn = MTCNN(image_size=224, device="cuda")
@@ -62,17 +59,17 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
 if __name__ == "__main__":
     num_process = 6
 
-    #     printers = ["digital"]
-    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
-    #     driver(CLEAN_DIR, printers, num_process)
-    #
-    #     printers = ["dnp", "digital", "rico"]
-    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
-    #     driver(CLEAN_DIR, printers, num_process)
+    printers = ["digital"]
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
+    driver(CLEAN_DIR, printers, num_process)
 
     printers = ["digital"]
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/"
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
     driver(CLEAN_DIR, printers, num_process)
+
+#     printers = ["digital"]
+#     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/"
+#     driver(CLEAN_DIR, printers, num_process)
 
 #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
 #     printers = ["digital"]

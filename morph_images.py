@@ -84,12 +84,13 @@ def main() -> None:
     ssplits = ["test", "train"]
     morphs = ["lma"]
     morphs = ["greedy"]
-    datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
     datasets = ["frgc", "feret"]
+    datasets = ["abc_database", "frill", "ms40"]
     #     datasets = ["frgc", "abc_database", "frill", "ms40"]
     top_ks = [9, 6, 4, 3, 3]
+    top_ks = [4, 3, 3]
     for morph in morphs:
-        for ssplit in ssplits:
+        for ssplit in reversed(ssplits):
             # Normal datasets
             for dataset, top_k in zip(datasets, top_ks):
                 if os.path.isfile(
@@ -97,7 +98,7 @@ def main() -> None:
                 ):
                     rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/aligned/{ssplit}/"
                     csv_file = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/{ssplit}_index.csv"
-                    odir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/{ssplit}"
+                    odir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/digital/morph/{morph}/raw/{ssplit}"
                     temp_csv_file = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/{dataset}/top_3_{ssplit}_index.csv"
                     #                     if not os.path.isfile(temp_csv_file):
                     subprocess.call(
@@ -107,16 +108,17 @@ def main() -> None:
                     )
                     perform_morphing(morph, rdir, temp_csv_file, odir)
 
-            # narayan dataset
-            narayan_rdir = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/digital"
-            for dataset in os.listdir(narayan_rdir):
-                if not os.path.isdir(os.path.join(narayan_rdir, dataset)):
-                    continue
-                aligned_dir = os.path.join(narayan_rdir, dataset, "aligned", ssplit)
-                csvfile = os.path.join(narayan_rdir, dataset, f"{ssplit}_index.csv")
-                output_dir = os.path.join(narayan_rdir, dataset, "morph", morph, ssplit)
-                if os.path.isfile(csvfile):
-                    perform_morphing(morph, aligned_dir, csvfile, output_dir)
+
+#             # narayan dataset
+#             narayan_rdir = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/digital"
+#             for dataset in os.listdir(narayan_rdir):
+#                 if not os.path.isdir(os.path.join(narayan_rdir, dataset)):
+#                     continue
+#                 aligned_dir = os.path.join(narayan_rdir, dataset, "aligned", ssplit)
+#                 csvfile = os.path.join(narayan_rdir, dataset, f"{ssplit}_index.csv")
+#                 output_dir = os.path.join(narayan_rdir, dataset, "morph", morph, ssplit)
+#                 if os.path.isfile(csvfile):
+#                     perform_morphing(morph, aligned_dir, csvfile, output_dir)
 
 
 #     perform_morphing(

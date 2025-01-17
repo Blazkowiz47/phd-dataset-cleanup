@@ -24,6 +24,28 @@ def unpack_bz2(src_path):
     return dst_path
 
 
+def align_images(args: Tuple[int, List[Tuple[str, str]]]) -> None:
+    """
+    Extracts and aligns all faces from images using DLib and a function from original FFHQ dataset preparation step
+    python align_images.py /raw_images /aligned_images
+    """
+    process_num, pairs = args
+
+    landmarks_model_path = "./models/temp/shape_predictor_68_face_landmarks.dat"
+    #         get_file(
+    #             "shape_predictor_68_face_landmarks.dat.bz2",
+    #             LANDMARKS_MODEL_URL,
+    #             cache_subdir="temp",
+    #         )
+    landmarks_detector = LandmarksDetector(landmarks_model_path)
+    for fname, ofname in tqdm.tqdm(pairs, position=process_num):
+        for _, face_landmarks in enumerate(
+            landmarks_detector.get_landmarks(fname), start=1
+        ):
+            os.makedirs(os.path.split(ofname)[0], exist_ok=True)
+            image_align(fname, ofname, face_landmarks)
+
+
 def getpairs(rdir: str, odir: str) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
     files = glob(os.path.join(rdir, RAW, "*", "*.png")) + glob(
@@ -47,28 +69,6 @@ def getpairs(rdir: str, odir: str) -> List[Tuple[str, str]]:
 
         pairs.append((file, ofname))
     return pairs
-
-
-def align_images(args: Tuple[int, List[Tuple[str, str]]]) -> None:
-    """
-    Extracts and aligns all faces from images using DLib and a function from original FFHQ dataset preparation step
-    python align_images.py /raw_images /aligned_images
-    """
-    process_num, pairs = args
-
-    landmarks_model_path = "./models/temp/shape_predictor_68_face_landmarks.dat"
-    #         get_file(
-    #             "shape_predictor_68_face_landmarks.dat.bz2",
-    #             LANDMARKS_MODEL_URL,
-    #             cache_subdir="temp",
-    #         )
-    landmarks_detector = LandmarksDetector(landmarks_model_path)
-    for fname, ofname in tqdm.tqdm(pairs, position=process_num):
-        for _, face_landmarks in enumerate(
-            landmarks_detector.get_landmarks(fname), start=1
-        ):
-            os.makedirs(os.path.split(ofname)[0], exist_ok=True)
-            image_align(fname, ofname, face_landmarks)
 
 
 def driver(
