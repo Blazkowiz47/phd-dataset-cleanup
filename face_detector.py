@@ -16,14 +16,10 @@ RAW = "raw"
 
 def getpairs(dir: str) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
-    files = (
-        glob(os.path.join(dir, RAW, "*", "*.png"))
-        + glob(os.path.join(dir, RAW, "*", "*.jpg"))
-        + glob(os.path.join(dir, RAW, "*", "*.JPG"))
-    )
+    files = glob(os.path.join(dir, RAW, "*", "*.png"))
     for file in files:
-        temp = file.split(RAW + "/")[1].replace("png", "jpg")
-        pairs.append((file, os.path.join(dir, temp)))
+        temp = file.replace(RAW + "/", "facedetect/").replace("png", "jpg")
+        pairs.append((file, temp))
     return pairs
 
 
@@ -40,16 +36,21 @@ def facedetect(args: Tuple[int, List[Tuple[str, str]]]) -> None:
 def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
     args: List[Tuple[str, str]] = []
     for printer in printers:
-        if os.path.isdir(os.path.join(CLEAN_DIR, printer, "bonafide", RAW)):
-            args.extend(getpairs(os.path.join(CLEAN_DIR, printer, "bonafide")))
+        # if os.path.isdir(os.path.join(CLEAN_DIR, printer, "bonafide", RAW)):
+        #     args.extend(getpairs(os.path.join(CLEAN_DIR, printer, "bonafide")))
 
         if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph")):
             for morph in os.listdir(os.path.join(CLEAN_DIR, printer, "morph")):
+                if "lmaubo" != morph:
+                    continue
+
                 if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph", morph, RAW)):
+                    print(os.path.join(CLEAN_DIR, printer, "morph", morph, RAW))
                     args.extend(
                         getpairs(os.path.join(CLEAN_DIR, printer, "morph", morph))
                     )
 
+    print(CLEAN_DIR, len(args))
     step = len(args) // num_process
     chunks = [args[x : x + step] for x in range(0, len(args), step)]
     with Pool(num_process) as p:
@@ -60,10 +61,38 @@ if __name__ == "__main__":
     num_process = 6
 
     printers = ["digital"]
+<<<<<<< HEAD
     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/"
     driver(CLEAN_DIR, printers, num_process)
+=======
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc"
+    #     driver(CLEAN_DIR, printers, num_process)
+
+    #     printers = ["dnp", "digital", "rico"]
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret"
+    #     driver(CLEAN_DIR, printers, num_process)
+>>>>>>> b5deb762642821f29cf28217e7a3eb1b83ebc27a
+
+    #     printers = ["digital"]
+    #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/"
+    #     driver(CLEAN_DIR, printers, num_process)
+
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan/"
+    # printers = ["digital"]
+    # for printer in printers:
+    #     dir = os.path.join(CLEAN_DIR, printer)
+    #     subds = os.listdir(dir)
+    #     subds = [
+    #         d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
+    #     ]
+    #     driver(dir, subds, num_process)
+
+    # printers = ["digital"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/synonot/"
+    # driver(CLEAN_DIR, printers, num_process)
 
     printers = ["digital"]
+<<<<<<< HEAD
     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/"
     driver(CLEAN_DIR, printers, num_process)
 
@@ -80,3 +109,7 @@ if __name__ == "__main__":
 #             d for d in subds if "." not in d and os.path.isdir(os.path.join(dir, d))
 #         ]
 #         driver(dir, subds, num_process)
+=======
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database"
+    driver(CLEAN_DIR, printers, num_process)
+>>>>>>> b5deb762642821f29cf28217e7a3eb1b83ebc27a

@@ -83,7 +83,12 @@ def main() -> None:
 
     ssplits = ["test", "train"]
     morphs = ["lma"]
+<<<<<<< HEAD
     morphs = ["greedy"]
+=======
+    morphs = ["mipgan2", "mipgan1"]
+    datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
+>>>>>>> b5deb762642821f29cf28217e7a3eb1b83ebc27a
     datasets = ["frgc", "feret"]
     datasets = ["abc_database", "frill", "ms40"]
     #     datasets = ["frgc", "abc_database", "frill", "ms40"]

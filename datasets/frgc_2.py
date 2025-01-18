@@ -94,15 +94,18 @@ def copy_raw_files_to_folder(
                     .replace("jpeg", "png")
                 )
                 frs_file = (
-                    os.path.join(align_folder, file.replace("d", "_"))
+                    os.path.join(frs_folder, file.replace("d", "_"))
                     .replace("jpg", "npy")
+                    .replace("JPG", "npy")
                     .replace("jpeg", "npy")
+                    .replace("JPEG", "npy")
                     .replace("png", "npy")
+                    .replace("PNG", "npy")
                 )
 
                 face_detect_args.append((src_file, face_detect_file))
                 align_args.append((src_file, align_file))
-                frs_args.append((src_file, frs_file))
+                frs_args.append((face_detect_file, frs_file))
 
     return face_detect_args, align_args, frs_args
 
@@ -113,10 +116,16 @@ def frsextract(args: Tuple[int, Tuple[str, List[Tuple[str, str]]]]) -> None:
     model = get_model()
     for arg in tqdm(pairs, position=pos):
         fname, oname = arg
-        oname.replace("frs/", f"frs/{backbone}/")
-        feature = get_features(fname, model)
-        os.makedirs(os.path.split(oname)[0], exist_ok=True)
-        np.save(oname, feature)
+        oname = oname.replace("/frs/", f"/frs/{backbone}/")
+        if os.path.isfile(oname):
+            continue
+
+        try:
+            feature = get_features(fname, model)
+            os.makedirs(os.path.split(oname)[0], exist_ok=True)
+            np.save(oname, feature)
+        except Exception as e:
+            print(e)
 
 
 def frsdriver(args: List[Tuple[str, str]], num_process: int) -> None:
