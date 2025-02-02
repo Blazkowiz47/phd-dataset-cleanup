@@ -1,4 +1,6 @@
 import bz2
+import shutil
+import json
 import os
 from multiprocessing import Pool
 from typing import List, Tuple
@@ -156,8 +158,8 @@ def main(num_process: int = 8):
         all_align_args.extend(align_args)
         all_frs_args.extend(frs_args)
 
-    frsdriver(all_frs_args, num_process)
-    return
+    # frsdriver(all_frs_args, num_process)
+    # return
 
     for args, callback in zip([all_align_args], [align_images]):
         step = len(args) // num_process
@@ -166,5 +168,24 @@ def main(num_process: int = 8):
             p.map(callback, enumerate(chunks))
 
 
+def sortout_with_subjectids_and_gender():
+    image_folder = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc_2/digital/bonafide/raw/sorted"
+    src_folder = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc_2/digital/bonafide/raw/aligned"
+    gender_mapping_file = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc_2/digital/bonafide/raw/aligned/gender.json"
+    with open(gender_mapping_file, "r") as fp:
+        gender_mapping = json.load(fp)
+
+    for file in tqdm(os.listdir(src_folder)):
+        sid = file.split("_")[0]
+        gender = gender_mapping[sid]["gender"]
+
+        dst_folder = os.path.join(image_folder, sid + "_" + gender)
+        os.makedirs(dst_folder, exist_ok=True)
+        dst_file = os.path.join(dst_folder, os.path.basename(file))
+        src_file = os.path.join(src_folder, file)
+        shutil.copy(src_file, dst_file)
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    sortout_with_subjectids_and_gender()

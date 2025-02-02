@@ -243,6 +243,21 @@ def create_indices(fname: str, dirname: str, oname: str) -> None:
     with open(oname, "w+") as fp:
         fp.writelines(pairs)
 
+def test() -> None:
+    for ssplit in ["test", "train"]:
+        subject_ids_in_train = {}
+        for file in os.listdir(os.path.join(CLEAN_DIR, "digital", "bonafide", ssplit)):
+            id, nm = file.split(".")[0].split("_")
+            if id in subject_ids_in_train:
+                subject_ids_in_train[id].append(nm)
+            else:
+                subject_ids_in_train[id] = [nm]
+        print(ssplit, len(subject_ids_in_train.keys()))
+        with open(os.path.join(CLEAN_DIR, f"{ssplit}_gender.json"), "r") as fp:
+            data = json.load(fp)
+
+        print(ssplit, len(data.keys()))
+        print()
 
 if __name__ == "__main__":
     #     clean_bonafide()
@@ -253,13 +268,14 @@ if __name__ == "__main__":
     #         os.path.join(CLEAN_DIR, "digital", "bonafide_stats.txt"),
     #     )
     #     clean_raw()
-    create_indices(
-        os.path.join(CLEAN_DIR, "test_gender.json"),
-        os.path.join(CLEAN_DIR, "digital", ALIGNED, "test"),
-        os.path.join(CLEAN_DIR, "test_index.csv"),
-    )
-    create_indices(
-        os.path.join(CLEAN_DIR, "train_gender.json"),
-        os.path.join(CLEAN_DIR, "digital", ALIGNED, "train"),
-        os.path.join(CLEAN_DIR, "train_index.csv"),
-    )
+    # create_indices(
+    #     os.path.join(CLEAN_DIR, "test_gender.json"),
+    #     os.path.join(CLEAN_DIR, "digital", ALIGNED, "test"),
+    #     os.path.join(CLEAN_DIR, "test_index.csv"),
+    # )
+    # create_indices(
+    #     os.path.join(CLEAN_DIR, "train_gender.json"),
+    #     os.path.join(CLEAN_DIR, "digital", ALIGNED, "train"),
+    #     os.path.join(CLEAN_DIR, "train_index.csv"),
+    # )
+    test()

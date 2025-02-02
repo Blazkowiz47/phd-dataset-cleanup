@@ -1,4 +1,5 @@
 import json
+from tqdm import tqdm
 import os
 from pathlib import Path
 from typing import Dict, List
@@ -14,11 +15,12 @@ def get_mappings(
     sids = list(subjects.keys())
     sample = 0
     gender = None
-
+    pbar = tqdm(total=len(sids))
     while subjectid < len(sids):
         sid = sids[subjectid]
         if not gender and "gender" in subjects[sid]:
             subjectid += 1
+            pbar.update(1)
             continue
 
         fname = subjects[sid]["file"][sample]
@@ -30,6 +32,7 @@ def get_mappings(
             exit(0)
         if gender not in ["f", "m", "n"]:
             subjectid -= 1
+            pbar.update(-1)
             print("Going back")
             continue
         if gender == "n":
@@ -39,6 +42,7 @@ def get_mappings(
         print(f"assigning: {gender} to: {sid}")
         subjects[sid]["gender"] = gender
         subjectid += 1
+        pbar.update(1)
         sample = 0
         gender = None
 
@@ -67,6 +71,18 @@ def splitted_datasets(rdir: str, oname: str) -> None:
     get_mappings(subjects, oname)
 
 
+def for_frgc2(rdir: str, oname: str) -> None:
+    subjects: Dict[str, Dict[str, List[str] | str]] = {}
+    for file in os.listdir(rdir):
+        sid = file.split("_")[0]
+        if sid not in subjects:
+            subjects[sid] = {"file": []}
+
+        subjects[sid]["file"].append(os.path.join(rdir, file))
+
+    get_mappings(subjects, oname)
+
+
 def unsplitted_datasets(rdir: str, oname: str) -> None:
     subjects: Dict[str, Dict[str, List[str] | str]] = {
         sid: {} for sid in os.listdir(rdir) if os.path.isdir(os.path.join(rdir, sid))
@@ -88,7 +104,7 @@ if __name__ == "__main__":
         #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/abc_database/digital/aligned/",
         #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc/digital/aligned/",
         #         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frill/digital/aligned/",
-        "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/",
+        # "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/aligned/",
     ]
     for dataset in datasets:
         for ssplit in ["train", "test"]:
@@ -99,11 +115,12 @@ if __name__ == "__main__":
                 ),
             )
 
-#     datasets = [
-#         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/ms40/raw",
-#     ]
-#     for dataset in datasets:
-#         unsplitted_datasets(
-#             dataset,
-#             os.path.join(dataset, "gender.json"),
-#         )
+    datasets = [
+        # "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/ms40/raw",
+        "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc_2/digital/bonafide/raw/aligned/",
+    ]
+    for dataset in datasets:
+        for_frgc2(
+            dataset,
+            os.path.join(dataset, "gender.json"),
+        )
