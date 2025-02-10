@@ -3,6 +3,7 @@ Calculate global FAR thresholds for arcface, adaface, and magface models.
 Databases used: FRGC Complete, FERET, ABC
 """
 
+import argparse
 import os
 from typing import Dict, Iterable, List, Tuple
 from multiprocessing import Process, Manager
@@ -23,7 +24,7 @@ def load_data(backbone: str) -> Dict[str, List[Tuple[str, torch.Tensor]]]:
 
     for i, sdir in enumerate(
         [
-            f"{RDIR}/frgc_2/digital/bonafide/raw/frs/{backbone}",
+            f"{RDIR}/frgc_2/digital/bonafide/raw/frs_sorted/{backbone}",
             f"{RDIR}/feret/frs/{backbone}/digital/bonafide/test/",
             f"{RDIR}/feret/frs/{backbone}/digital/bonafide/train/",
         ]
@@ -106,6 +107,8 @@ def plot_histograms(
             linestyle="--",
             label=f"Threshold {threshold:.4f}",
         )
+    ax = plt.gca()
+    ax.set_ylim((0.0, 1000.0))
 
     plt.savefig(
         f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/{backbone}_gen_imp.png"
@@ -113,65 +116,71 @@ def plot_histograms(
     plt.close()
 
 
-def driver() -> None:
-    os.makedirs("scores", exist_ok=True)
-    backbones = [
-        # "magface",
-        "adaface",
-        # "arcface",
+def driver(backbone: str) -> None:
+    #     os.makedirs("scores", exist_ok=True)
+    #     data = load_data(backbone)
+    #     genuine_scores = get_genuine_pairs(data)
+    #     imposter_scores = get_imposter_pairs(data)
+    #
+    genuine_scores_path: str = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_gen_scores.npy"
+    imposter_scores_path: str = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_imp_scores.npy"
+
+    #     np.save(genuine_scores_path, genuine_scores)
+    #     np.save(imposter_scores_path, imposter_scores)
+
+    # data = load_data(backbone)
+    genuine_scores = np.load(genuine_scores_path)
+    imposter_scores = np.load(imposter_scores_path)
+    fars, frrs, thresholds = get_fars_and_frrs(genuine_scores, imposter_scores)
+    actual_threshold = [
+        thresholds[np.argmin(np.abs(fars - 1e-2))],
+        thresholds[np.argmin(np.abs(fars - 1e-3))],
+        thresholds[np.argmin(np.abs(fars - 1e-4))],
+        thresholds[np.argmin(np.abs(fars - 1e-5))],
     ]
-
-    for backbone in backbones:
-        genuine_scores_path: str = f"scores/global_{backbone}_gen_scores.npy"
-        imposter_scores_path: str = f"scores/global_{backbone}_imp_scores.npy"
-        # data = load_data(backbone)
-        genuine_scores = np.load(genuine_scores_path)
-        imposter_scores = np.load(imposter_scores_path)
-        fars, frrs, thresholds = get_fars_and_frrs(genuine_scores, imposter_scores)
-        actual_threshold = [
-            thresholds[np.argmin(np.abs(fars - 1e-3))],
-            thresholds[np.argmin(np.abs(fars - 1e-4))],
-            thresholds[np.argmin(np.abs(fars - 1e-5))],
-        ]
-        with open(
-            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_threshods.txt",
-            "w+",
-        ) as f:
-            f.write(f"Thresholds for {backbone} are :")
-            f.write(f"1e-3: {actual_threshold[0]}")
-            f.write(f"1e-4: {actual_threshold[1]}")
-            f.write(f"1e-5: {actual_threshold[2]}")
-
-        np.save(
-            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_actual_thresholds.npy",
-            np.array(actual_threshold),
+    with open(
+        f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_threshods.txt",
+        "w+",
+    ) as f:
+        f.write(
+            f"Thresholds for {backbone} are :\n1e-2: {actual_threshold[0]}\n1e-3: {actual_threshold[1]}\n1e-4: {actual_threshold[2]}\n1e-5: {actual_threshold[3]}\n"
         )
 
-        plot_histograms(fars, frrs, actual_threshold, backbone)
+    #     np.save(
+    #         f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_actual_thresholds.npy",
+    #         np.array(actual_threshold),
+    #     )
 
-        np.save(
-            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_fars.npy",
-            fars,
-        )
-        np.save(
-            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_frrs.npy",
-            frrs,
-        )
-        np.save(
-            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_thresholds.npy",
-            thresholds,
-        )
-
-        # if not os.path.isfile(genuine_scores_path):
-        #     genuine_scores = get_genuine_pairs(data)
-        #     np.save(genuine_scores_path, genuine_scores)
-        #     del genuine_scores
-        #
-        # if not os.path.isfile(imposter_scores_path):
-        #     imposter_scores = get_imposter_pairs(data)
-        #     np.save(imposter_scores_path, imposter_scores)
-        #     del imposter_scores
+    plot_histograms(fars, frrs, actual_threshold, backbone)
 
 
+#     np.save(
+#         f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_fars.npy",
+#         fars,
+#     )
+#     np.save(
+#         f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_frrs.npy",
+#         frrs,
+#     )
+#     np.save(
+#         f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/scores/global_{backbone}_thresholds.npy",
+#         thresholds,
+#     )
+
+
+# if not os.path.isfile(genuine_scores_path):
+#     genuine_scores = get_genuine_pairs(data)
+#     np.save(genuine_scores_path, genuine_scores)
+#     del genuine_scores
+#
+# if not os.path.isfile(imposter_scores_path):
+#     imposter_scores = get_imposter_pairs(data)
+#     np.save(imposter_scores_path, imposter_scores)
+#     del imposter_scores
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--backbone", type=str, default="arcface")
 if __name__ == "__main__":
-    driver()
+    args = parser.parse_args()
+    driver(args.backbone)
