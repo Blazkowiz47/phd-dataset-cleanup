@@ -143,7 +143,7 @@ def driver(args: Tuple[int, str, str, str]) -> None:
             img1, img2 = img1.split(".")[0], img2.split(".")[0]
             morph_img = os.path.join(output_dir, img1 + "-vs-" + img2 + ".png")
             if not os.path.isfile(morph_img):
-                remaining_lines.append(line)
+                remaining_lines.append(line.replace('.jpg','.png'))
 
     if len(remaining_lines) == 0:
         print(src_dir, len(lines), len(remaining_lines))

@@ -85,8 +85,10 @@ def main() -> None:
     morphs = ["lma"]
 
     morphs = ["mipgan2", "mipgan1"]
+    morphs = ['pipe','mipgan1', 'mipgan2']
     datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
     datasets = ["frill", "ms40"]
+    datasets = ['lfc']
     top_ks = [10, 10, 10]
 
     for morph in morphs:

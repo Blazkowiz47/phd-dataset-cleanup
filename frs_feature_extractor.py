@@ -1,5 +1,5 @@
 import os
-from glob import glob
+from pathlib import Path
 from multiprocessing import Pool
 from typing import List, Tuple, Dict
 
@@ -20,14 +20,21 @@ FACEDETECT = "facedetect"
 
 
 def getpairs(
-    dir: str, odir: str, ext: List[str] = ["jpg", "png"]
+    dir: str, odir: str, ext: List[str] = [".jpg", ".png", ".jpeg"]
 ) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
-    for e in ext:
-        files = glob(os.path.join(dir, f"*.{e}"))
-        for file in files:
-            temp = os.path.split(file)[1].replace(e, "npy")
-            temp = os.path.join(odir, temp)
+    for file in tqdm(Path(dir).rglob("*")):
+        suf = file.suffix
+        if file.suffix.lower() not in ext:
+            continue
+        filename = file.name
+        if filename.startswith("._"):
+            os.remove(file)
+            continue
+        file = str(file)
+        temp = file.replace(dir, odir)
+        temp = temp.replace(suf, ".npy")
+        if not os.path.isfile(temp):
             pairs.append((file, temp))
 
     return pairs
@@ -51,71 +58,81 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
         args[backbone] = []
 
     odir = os.path.join(CLEAN_DIR, "frs")
+    rdirs = [
+        "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/Elastic_3D_Mask_FD/Elastic_3D_Mask_FD",
+    ]
     for backbone in BACKBONES:
-        for printer in printers:
-            for ssplit in ["test", "train"]:
-                if os.path.isdir(
-                    os.path.join(CLEAN_DIR, printer, "bonafide", FACEDETECT, ssplit)
-                ):
-                    args[backbone].extend(
-                        getpairs(
-                            os.path.join(
-                                CLEAN_DIR, printer, "bonafide", FACEDETECT, ssplit
-                            ),
-                            os.path.join(
-                                odir, backbone, printer, "bonafide", FACEDETECT, ssplit
-                            ),
-                            ["jpg"],
-                        )
-                    )
-                if os.path.isdir(os.path.join(CLEAN_DIR, printer, "bonafide", ssplit)):
-                    args[backbone].extend(
-                        getpairs(
-                            os.path.join(CLEAN_DIR, printer, "bonafide", ssplit),
-                            os.path.join(odir, backbone, printer, "bonafide", ssplit),
-                        )
-                    )
+        odirs = [
+            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/Elastic_3D_Mask_FD/frs/{backbone}",
+        ]
+        for rdir, odir in zip(rdirs, odirs):
+            args[backbone].extend(getpairs(rdir, odir))
 
-                if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph")):
-                    for morph in os.listdir(os.path.join(CLEAN_DIR, printer, "morph")):
-                        if os.path.isdir(
-                            os.path.join(CLEAN_DIR, printer, "morph", morph, FACEDETECT)
-                        ):
-                            args[backbone].extend(
-                                getpairs(
-                                    os.path.join(
-                                        CLEAN_DIR,
-                                        printer,
-                                        "morph",
-                                        morph,
-                                        FACEDETECT,
-                                        ssplit,
-                                    ),
-                                    os.path.join(
-                                        odir,
-                                        backbone,
-                                        printer,
-                                        "morph",
-                                        morph,
-                                        FACEDETECT,
-                                        ssplit,
-                                    ),
-                                    ["jpg"],
-                                )
-                            )
-                        if os.path.isdir(
-                            os.path.join(CLEAN_DIR, printer, "morph", morph)
-                        ):
-                            args[backbone].extend(
-                                getpairs(
-                                    os.path.join(
-                                        CLEAN_DIR, printer, "morph", morph, ssplit
-                                    ),
-                                    os.path.join(
-                                        odir, backbone, printer, "morph", morph, ssplit
-                                    ),
-                                )
-                            )
+    # for backbone in BACKBONES:
+    #     for printer in printers:
+    #         for ssplit in ["test", "train"]:
+    #             if os.path.isdir(
+    #                 os.path.join(CLEAN_DIR, printer, "bonafide", FACEDETECT, ssplit)
+    #             ):
+    #                 args[backbone].extend(
+    #                     getpairs(
+    #                         os.path.join(
+    #                             CLEAN_DIR, printer, "bonafide", FACEDETECT, ssplit
+    #                         ),
+    #                         os.path.join(
+    #                             odir, backbone, printer, "bonafide", FACEDETECT, ssplit
+    #                         ),
+    #                         ["jpg"],
+    #                     )
+    #                 )
+    #             if os.path.isdir(os.path.join(CLEAN_DIR, printer, "bonafide", ssplit)):
+    #                 args[backbone].extend(
+    #                     getpairs(
+    #                         os.path.join(CLEAN_DIR, printer, "bonafide", ssplit),
+    #                         os.path.join(odir, backbone, printer, "bonafide", ssplit),
+    #                     )
+    #                 )
+    #
+    #             if os.path.isdir(os.path.join(CLEAN_DIR, printer, "morph")):
+    #                 for morph in os.listdir(os.path.join(CLEAN_DIR, printer, "morph")):
+    #                     if os.path.isdir(
+    #                         os.path.join(CLEAN_DIR, printer, "morph", morph, FACEDETECT)
+    #                     ):
+    #                         args[backbone].extend(
+    #                             getpairs(
+    #                                 os.path.join(
+    #                                     CLEAN_DIR,
+    #                                     printer,
+    #                                     "morph",
+    #                                     morph,
+    #                                     FACEDETECT,
+    #                                     ssplit,
+    #                                 ),
+    #                                 os.path.join(
+    #                                     odir,
+    #                                     backbone,
+    #                                     printer,
+    #                                     "morph",
+    #                                     morph,
+    #                                     FACEDETECT,
+    #                                     ssplit,
+    #                                 ),
+    #                                 ["jpg"],
+    #                             )
+    #                         )
+    #                     if os.path.isdir(
+    #                         os.path.join(CLEAN_DIR, printer, "morph", morph)
+    #                     ):
+    #                         args[backbone].extend(
+    #                             getpairs(
+    #                                 os.path.join(
+    #                                     CLEAN_DIR, printer, "morph", morph, ssplit
+    #                                 ),
+    #                                 os.path.join(
+    #                                     odir, backbone, printer, "morph", morph, ssplit
+    #                                 ),
+    #                             )
+    #                         )
 
     for backbone, arg in args.items():
         step = len(arg) // num_process
@@ -132,7 +149,7 @@ def driver(CLEAN_DIR: str, printers: List[str], num_process: int) -> None:
 
 
 if __name__ == "__main__":
-    num_process = 6
+    num_process = 4
 
     # printers = ["digital"]
     # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/synonot"
@@ -146,8 +163,12 @@ if __name__ == "__main__":
     # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/frgc"
     # driver(CLEAN_DIR, printers, num_process)
 
+    # printers = ["digital"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret"
+    # driver(CLEAN_DIR, printers, num_process)
+
     printers = ["digital"]
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret"
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/Elastic_3D_Mask_FD/Elastic_3D_Mask_FD"
     driver(CLEAN_DIR, printers, num_process)
 
     # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan"
