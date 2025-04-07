@@ -20,21 +20,14 @@ FACEDETECT = "facedetect"
 
 
 def getpairs(
-    dir: str, odir: str, ext: List[str] = [".jpg", ".png", ".jpeg"]
+    dir: str, odir: str, ext: List[str] = ["jpg", "png", "PNG", "JPG", "JPEG", "jpeg"]
 ) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
-    for file in tqdm(Path(dir).rglob("*")):
-        suf = file.suffix
-        if file.suffix.lower() not in ext:
-            continue
-        filename = file.name
-        if filename.startswith("._"):
-            os.remove(file)
-            continue
-        file = str(file)
-        temp = file.replace(dir, odir)
-        temp = temp.replace(suf, ".npy")
-        if not os.path.isfile(temp):
+    for e in ext:
+        files = glob(os.path.join(dir, "*", f"*.{e}"))
+        for file in files:
+            temp = os.path.split(file)[1].replace(e, "npy")
+            temp = os.path.join(odir, temp)
             pairs.append((file, temp))
 
     return pairs
@@ -170,6 +163,10 @@ if __name__ == "__main__":
     printers = ["digital"]
     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/Elastic_3D_Mask_FD/Elastic_3D_Mask_FD"
     driver(CLEAN_DIR, printers, num_process)
+
+    # printers = ["digital"]
+    # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret"
+    # driver(CLEAN_DIR, printers, num_process)
 
     # CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/narayan"
     # printers = ["digital"]
