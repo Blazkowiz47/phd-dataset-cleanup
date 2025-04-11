@@ -184,10 +184,13 @@ def driver(args: Tuple[int, str, str, str]):
         output = os.path.join(output_dir, temp + ".png")
         if os.path.isfile(output):
             continue
-
-        morphed_image = morph(img1, img2)
-        os.makedirs(output_dir, exist_ok=True)
-        Image.fromarray(morphed_image).save(output)
+        try:
+            morphed_image = morph(img1, img2)
+            os.makedirs(output_dir, exist_ok=True)
+            Image.fromarray(morphed_image).save(output)
+        except:
+            print("Error in morphing images:", temp)
+            continue
 
 
 # Locate Facial Landmarks

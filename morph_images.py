@@ -84,11 +84,13 @@ def main() -> None:
     ssplits = ["test", "train"]
     morphs = ["lma"]
 
+    morphs = ["pipe", "mordiff", "greedy"]
+    morphs = ["lma"]
     morphs = ["mipgan2", "mipgan1"]
-    morphs = ['pipe','mipgan1', 'mipgan2']
     datasets = ["feret", "frgc", "abc_database", "frill", "ms40"]
     datasets = ["frill", "ms40"]
-    datasets = ['lfc']
+    datasets = ["lfc"]
+    datasets = ["iPhone12"]
     top_ks = [10, 10, 10]
 
     for morph in morphs:
