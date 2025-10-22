@@ -27,7 +27,7 @@ class MorphDataset(torch.utils.data.Dataset):
         with open(morph_list_csv, "r") as fp:
             pairs = fp.readlines()
 
-        for pair in pairs:
+        for i,pair in enumerate(pairs):
             if not pair.strip():
                 continue
             if len(pair.split(",")) != 2:
@@ -52,6 +52,8 @@ class MorphDataset(torch.utils.data.Dataset):
             if os.path.isfile(fname):
                 continue
             self.files.append((img1, img2, fname))
+            if i == 49:
+                break
 
         transform = [
             transforms.Resize(
