@@ -23,6 +23,7 @@ class MorphDataset(torch.utils.data.Dataset):
 
         self.image_size = image_size
         self.files: List[Tuple[str, str, str]] = []
+        print("Building morph dataset for greedy")
         with open(morph_list_csv, "r") as fp:
             pairs = fp.readlines()
 
@@ -36,6 +37,16 @@ class MorphDataset(torch.utils.data.Dataset):
 
             fname = img1.split(".")[0] + "-vs-" + img2.split(".")[0] + ".png"
             img1, img2 = os.path.join(src_dir, img1), os.path.join(src_dir, img2)
+            if not os.path.exists(img1):
+                img1 = img1.replace(".png", ".jpg")
+                img1 = os.path.join(
+                    os.path.split(img1)[0], os.path.split(img1)[1].replace("_", "-")
+                )
+            if not os.path.exists(img2):
+                img2 = img2.replace(".png", ".jpg")
+                img2 = os.path.join(
+                    os.path.split(img2)[0], os.path.split(img2)[1].replace("_", "-")
+                )
             fname = os.path.join(outdir, fname)
             os.makedirs(outdir, exist_ok=True)
             if os.path.isfile(fname):
@@ -52,6 +63,7 @@ class MorphDataset(torch.utils.data.Dataset):
         ]
 
         self.transform = transforms.Compose(transform)
+        print("Initialised dataset")
 
     def __len__(self):
         return len(self.files)
@@ -531,9 +543,11 @@ def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, outdir = args
     config = "./morphs/greedy/configs/greedy_dim.yml"
     batch_size = 16
+    print("Driver start")
 
     with open(config, "r") as f:
         config = yaml.safe_load(f)
+    print("loaded config")
 
     device = "cuda"
     conf = ffhq256_autoenc()
@@ -572,8 +586,10 @@ def driver(args: Tuple[int, str, str, str]) -> None:
         else:
             raise Exception("Invalid `loss_fn` config!")
 
+    print("loaded model")
     dataset = MorphDataset(src_dir, morph_list_csv, outdir, conf.img_size)
-    dataloader = DataLoader(dataset, batch_size=batch_size, pin_memory=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size)
+    print("loaded dataset")
 
     for img_a, img_b, output_path in tqdm(dataloader):
         img_a = img_a.to(device)

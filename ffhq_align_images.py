@@ -109,7 +109,7 @@ if __name__ == "__main__":
     #     ]
     #     driver(CLEAN_DIR, printers=subds)
 
-    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/lfc"
+    CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/ria/FairFace/fairface_20_29_only/selected"
     driver(CLEAN_DIR)
 #     CLEAN_DIR = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/ms40/"
 #     driver(CLEAN_DIR)
