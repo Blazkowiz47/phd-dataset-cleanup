@@ -169,20 +169,16 @@ RDIR = Path("/mnt/cluster/nbl-datasets/face-morphing/Dhammadip/img-perturbed/")
 
 
 def morph_perturbed_images():
-    morphs = ["greedy", "pipe", "mordiff"]
+    morphs = ["greedy"]
     for morph in morphs:
         for dataset_dir in RDIR.glob("*"):
             if not dataset_dir.is_dir():
                 continue
             dataset = dataset_dir.name
-            if 'frgc' not in str(dataset_dir).lower():
+            if "frill" not in str(dataset_dir).lower():
                 continue
             for experiment in dataset_dir.glob("*"):
                 if not (RDIR / experiment).is_dir():
-                    continue
-                if not str(experiment).endswith(
-                    ("BPDA_EOT", "DCT_HF", "DWT_HF", "PGD")
-                ):
                     continue
 
                 if "original" == experiment.name:
@@ -198,7 +194,7 @@ def morph_perturbed_images():
                         "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/"
                         f"FaceMoprhingDatabases/cleaned_datasets/{dataset.lower()}"
                     )
-                    csv_file_name = f"{ssplit}_index.csv"
+                    csv_file_name = f"top_3_{ssplit}_index.csv"
                     csv_file = os.path.join(csv_dir, csv_file_name)
                     src_dir = str(protocol_dir)
                     out_dir = str(protocol_dir).replace("aligned", f"morph/{morph}")

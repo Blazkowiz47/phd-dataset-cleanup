@@ -10,6 +10,7 @@ def driver(args: Tuple[int, str, str, str]):
     process_num, src_dir, morph_list_csv, output_dir = args
     with open(morph_list_csv, "r") as fp:
         morph_list = fp.readlines()
+        morph_list = morph_list[:50]  # limit for testing
 
     for pair in tqdm(morph_list, position=process_num):
         if not pair.strip():
@@ -26,6 +27,6 @@ def driver(args: Tuple[int, str, str, str]):
             + os.path.split(img2)[1].split(".")[0]
         )
         output = os.path.join(output_dir, temp + ".png")
-        if os.path.isfile(output): 
+        if os.path.isfile(output):
             continue
         morph_two_images(img1, img2, output)

@@ -26,8 +26,9 @@ class MorphDataset(torch.utils.data.Dataset):
         print("Building morph dataset for greedy")
         with open(morph_list_csv, "r") as fp:
             pairs = fp.readlines()
-
-        for i,pair in enumerate(pairs):
+        
+        done = 0
+        for pair in pairs:
             if not pair.strip():
                 continue
             if len(pair.split(",")) != 2:
@@ -39,20 +40,31 @@ class MorphDataset(torch.utils.data.Dataset):
             img1, img2 = os.path.join(src_dir, img1), os.path.join(src_dir, img2)
             if not os.path.exists(img1):
                 img1 = img1.replace(".png", ".jpg")
-                img1 = os.path.join(
-                    os.path.split(img1)[0], os.path.split(img1)[1].replace("_", "-")
-                )
+                img1 = os.path.join(os.path.split(img1)[0], os.path.split(img1)[1])
+                if not os.path.exists(img1):
+                    img1 = os.path.join(
+                        os.path.split(img1)[0], os.path.split(img1)[1].replace("_", "-")
+                    )
+                    if not os.path.exists(img1):
+                        continue
+
             if not os.path.exists(img2):
                 img2 = img2.replace(".png", ".jpg")
-                img2 = os.path.join(
-                    os.path.split(img2)[0], os.path.split(img2)[1].replace("_", "-")
-                )
+                img2 = os.path.join(os.path.split(img2)[0], os.path.split(img2)[1])
+                if not os.path.exists(img2):
+                    img2 = os.path.join(
+                        os.path.split(img2)[0], os.path.split(img2)[1].replace("_", "-")
+                    )
+                    if not os.path.exists(img2):
+                        continue
+
             fname = os.path.join(outdir, fname)
             os.makedirs(outdir, exist_ok=True)
             if os.path.isfile(fname):
                 continue
             self.files.append((img1, img2, fname))
-            if i == 49:
+            done += 1
+            if done == 50:
                 break
 
         transform = [
@@ -544,7 +556,7 @@ def greedy_solve_pf_ode(
 def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, outdir = args
     config = "./morphs/greedy/configs/greedy_dim.yml"
-    batch_size = 16
+    batch_size = 40
     print("Driver start")
 
     with open(config, "r") as f:

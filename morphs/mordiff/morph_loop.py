@@ -8,6 +8,7 @@ def driver(args: Tuple[int, str, str, str]):
     process_num, src_dir, morph_list_csv, output_dir = args
     with open(morph_list_csv, "r") as fp:
         morph_list = fp.readlines()
+        morph_list = morph_list[:50]  # limit for testing
 
     for pair in tqdm(morph_list, position=process_num):
         if not pair.strip():
