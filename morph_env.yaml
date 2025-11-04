@@ -1,4 +1,4 @@
-name: morph
+name: gan
 channels:
   - defaults
   - https://repo.anaconda.com/pkgs/main
@@ -138,4 +138,4 @@ dependencies:
       - wrapt==1.16.0
       - yarl==1.15.2
       - zipp==3.20.2
-prefix: /mnt/volume/conda/morph
+prefix: /mnt/volume/conda/gan

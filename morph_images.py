@@ -175,11 +175,19 @@ def morph_perturbed_images():
             if not dataset_dir.is_dir():
                 continue
             dataset = dataset_dir.name
-            if "frill" not in str(dataset_dir).lower():
+            if "frgc" not in str(dataset_dir).lower():
                 continue
             for experiment in dataset_dir.glob("*"):
                 if not (RDIR / experiment).is_dir():
                     continue
+                ok = False
+                for type_dir in ["PGD","DCT_HF","DWT_HF","BPDA_EOT"]:
+                    if str(experiment).endswith(type_dir):
+                        ok = True
+                        break
+                if not ok:
+                    continue
+
 
                 if "original" == experiment.name:
                     continue

@@ -64,8 +64,8 @@ class MorphDataset(torch.utils.data.Dataset):
                 continue
             self.files.append((img1, img2, fname))
             done += 1
-            if done == 50:
-                break
+            # if done == 50:
+            #     break
 
         transform = [
             transforms.Resize(
@@ -556,7 +556,7 @@ def greedy_solve_pf_ode(
 def driver(args: Tuple[int, str, str, str]) -> None:
     process_num, src_dir, morph_list_csv, outdir = args
     config = "./morphs/greedy/configs/greedy_dim.yml"
-    batch_size = 40
+    batch_size = 16
     print("Driver start")
 
     with open(config, "r") as f:
